@@ -1,0 +1,20 @@
+id,categorie,subcategorie,denumire,UAT,lat,lon,descriere_scurt,descriere_lung,perioada,program_contact,web,foto_url,sursa,activ
+1,patrimoniu material,Monumente clasa A,Palatul Sturdza de la Miclăușeni,Butea,47.0714,26.9908,Castel neogotic ridicat între 1880 și 1904,,,Vizite zilnice 9-17,,,LMI 2015,DA
+2,patrimoniu material,Monumente clasa A,Palatul Cuza,Ruginoasa,47.2417,26.8300,Reședința domnitorului Alexandru Ioan Cuza,,,,,,LMI 2015,DA
+3,patrimoniu material,Monumente clasa A,Mănăstirea Dobrovăț,Dobrovăț,46.9553,27.5158,Ctitorie a lui Ștefan cel Mare din 1503,,,,,,LMI 2015,DA
+4,patrimoniu material,Monumente clasa A,Biserica Sfântul Gheorghe,Hârlău,47.4306,26.9028,Ctitorie a lui Ștefan cel Mare din 1492,,,,,,LMI 2015,DA
+5,patrimoniu material,Muzee și colecții,Muzeul Viei și Vinului,Hârlău,47.4290,26.9050,Colecție dedicată viticulturii din podgoria Cotnari,,,,,,CJ Iași,DA
+6,patrimoniu material,Muzee și colecții,Colecția de artă veche,Hârlău,47.4290,26.9050,Exemplu de colecție aflată în aceeași clădire,,,,,,Exemplu,DA
+7,patrimoniu material,Muzee și colecții,Colecția etnografică,Hârlău,47.4290,26.9050,Al treilea punct la aceleași coordonate,,,,,,Exemplu,DA
+8,patrimoniu material,Conace și case boierești,Conacul Cantacuzino-Pașcanu,Pașcani,47.2500,26.7167,Ansamblu boieresc din secolul XVII,,,,,,LMI 2015,DA
+9,patrimoniu natural,Arii de interes local,Fânețele seculare Valea lui David,Lețcani,47.1800,27.4700,Rezervație botanică cu specii de stepă,,,,,,ANANP,DA
+10,patrimoniu natural,Arii de interes local,Dealul Repedea,Bârnova,47.0783,27.5808,Rezervație paleontologică,,,,,,ANANP,DA
+11,patrimoniu natural,Situri SCI,Pădurea Bârnova-Repedea,Bârnova,47.0575,27.5522,Sit de importanță comunitară cu păduri de foioase,,,,,,Natura 2000,DA
+12,patrimoniu imaterial,Gastronomie locală,Podgoria Cotnari,Cotnari,47.3644,26.8639,Zonă viticolă cu denumire de origine controlată,,,,,,MADR,DA
+13,patrimoniu imaterial,Producători locali,Crama Bucium,Bucium,47.1200,27.6100,Producător de vin din podgoria Iași,,,,,,Exemplu,DA
+14,patrimoniu imaterial,Meșteșuguri,Atelier de olărit,Șipote,47.3400,27.1800,Ceramică tradițională lucrată manual,,,,,,Exemplu,DA
+15,evenimente,Festivaluri,Bătălia de la Ruginoasa,Ruginoasa,47.2417,26.8300,Obicei de Anul Nou cu participare largă,,31.12,,,,Exemplu,DA
+16,evenimente,Festivaluri,Sărbătoarea vinului,Cotnari,47.3644,26.8639,Eveniment anual de toamnă în podgorie,,12.09-14.09,,,,Exemplu,DA
+17,evenimente,Festivaluri,Zilele comunei Bârnova,Bârnova,47.0575,27.5522,Manifestare locală cu program cultural,,10.05-18.05,,,,Exemplu,DA
+18,evenimente,Festivaluri,Festivalul mărului,Hârlău,47.4306,26.9028,Târg de toamnă cu producători locali,,03.10-05.10,,,,Exemplu,DA
+19,patrimoniu material,Monumente clasa A,Mănăstirea Hadâmbu,Mogoșești,46.9925,27.4375,Mănăstire fortificată din 1659,,,,,,LMI 2015,DA
