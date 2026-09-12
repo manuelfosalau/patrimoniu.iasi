@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://manuelfosalau.github.io/patrimoniu.iasi/sitemap.xml

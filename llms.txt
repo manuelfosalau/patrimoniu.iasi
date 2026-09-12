@@ -1,0 +1,24 @@
+# Harta patrimoniului județului Iași
+
+> Hartă interactivă a patrimoniului natural, material și imaterial din județul Iași,
+> realizată ca instrument de lucru pentru strategia de turism a județului.
+> Municipiul Iași este exclus intenționat din setul de date.
+
+Datele acoperă patru categorii: patrimoniu natural (arii protejate SCI, SPA și de
+interes local), patrimoniu material (monumente de clasă A, muzee și colecții, conace
+și case boierești), patrimoniu imaterial (meșteșuguri, tezaur uman viu, gastronomie
+locală, producători locali) și evenimente cu impact.
+
+Conținutul este în curs de completare și verificare. Prezența unui obiectiv nu
+confirmă accesibilitatea publică sau programul de vizitare.
+
+## Pagini
+
+- [Harta patrimoniului](https://manuelfosalau.github.io/patrimoniu.iasi/): harta interactivă, cu filtrare pe categorii și subcategorii
+- [Calendarul evenimentelor](https://manuelfosalau.github.io/patrimoniu.iasi/evenimente.html): festivalurile și manifestările din județ, ordonate pe luni
+- [Despre proiect](https://manuelfosalau.github.io/patrimoniu.iasi/despre.html): surse de date, condiții de utilizare, confidențialitate și contact
+
+## Surse
+
+Lista Monumentelor Istorice, Agenția Națională pentru Arii Naturale Protejate,
+rețeaua Natura 2000, date colectate de echipa strategiei de turism a județului Iași.

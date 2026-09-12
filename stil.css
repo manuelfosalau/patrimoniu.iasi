@@ -1,0 +1,178 @@
+:root{
+  --ink:#221F1C;
+  --ink-2:#2E2A26;
+  --ink-3:#3B3630;
+  --hartie:#F7F6F3;
+  --text-clar:#EDE9E2;
+  --text-slab:#A79E92;
+  --linie:#443E37;
+  --accent:#C79A4B;
+  --lat-bara:330px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--ink);background:var(--hartie);
+}
+h1,h2,h3{font-family:Georgia,"Iowan Old Style","Times New Roman",serif;font-weight:600;margin:0}
+
+.sari-la-continut{
+  position:absolute;left:-9999px;top:0;z-index:3000;
+  background:#fff;color:var(--ink);padding:10px 16px;border-radius:0 0 5px 0;
+}
+.sari-la-continut:focus{left:0}
+
+#aplicatie{display:grid;grid-template-columns:var(--lat-bara) 1fr;height:100%}
+
+/* ---------- bara laterală ---------- */
+#bara{
+  background:var(--ink);color:var(--text-clar);
+  display:flex;flex-direction:column;min-height:0;border-right:1px solid #17150F;
+}
+#antet{padding:18px 20px 14px;border-bottom:1px solid var(--linie)}
+#antet h1{font-size:21px;letter-spacing:.1px;line-height:1.25}
+#antet p{margin:6px 0 0;font-size:12.5px;color:var(--text-slab)}
+
+nav.navigare{display:flex;gap:4px;padding:10px 16px;border-bottom:1px solid var(--linie)}
+nav.navigare a{
+  flex:1;text-align:center;padding:7px 9px;border-radius:5px;text-decoration:none;
+  font-size:13px;color:var(--text-slab);border:1px solid transparent;
+}
+nav.navigare a:hover{background:var(--ink-2);color:var(--text-clar)}
+nav.navigare a[aria-current="page"]{background:var(--ink-2);color:var(--text-clar);border-color:var(--linie)}
+
+#unelte{padding:14px 20px;border-bottom:1px solid var(--linie);display:grid;gap:10px}
+#cautare{
+  width:100%;padding:9px 11px;border-radius:5px;border:1px solid var(--linie);
+  background:var(--ink-2);color:var(--text-clar);font-size:14px;font-family:inherit;
+}
+#cautare::placeholder{color:#7E7568}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.rand-unelte{display:flex;gap:8px}
+select,.buton{
+  flex:1;padding:8px 10px;border-radius:5px;font-size:12.5px;font-family:inherit;
+  border:1px solid var(--linie);background:var(--ink-2);color:var(--text-clar);cursor:pointer;
+}
+.buton:hover,select:hover{background:var(--ink-3)}
+
+#filtre{flex:1;overflow-y:auto;padding:6px 12px 20px;min-height:0}
+.categorie{margin-top:14px}
+.cap-categorie{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:5px;cursor:pointer;user-select:none}
+.cap-categorie:hover{background:var(--ink-2)}
+.pastila{width:10px;height:10px;border-radius:50%;flex:none}
+.nume-categorie{font-size:13.5px;font-weight:600;letter-spacing:.2px;flex:1}
+.numar{font-size:11.5px;color:var(--text-slab);font-variant-numeric:tabular-nums}
+.subcategorii{margin:2px 0 0 27px;padding-left:11px;border-left:1px solid var(--linie)}
+.subcategorie{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:4px;cursor:pointer;font-size:13px;color:#D6CFC4}
+.subcategorie:hover{background:var(--ink-2)}
+.subcategorie span:first-of-type{flex:1}
+input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;cursor:pointer;flex:none;margin:0}
+
+#subsol{padding:12px 20px;border-top:1px solid var(--linie);font-size:12px;color:var(--text-slab);display:flex;justify-content:space-between;gap:10px}
+#subsol strong{color:var(--text-clar);font-weight:600;font-variant-numeric:tabular-nums}
+#subsol a{color:var(--text-slab)}
+
+/* ---------- hartă ---------- */
+#harta{height:100%;background:#E8E6E1}
+
+.ancora-pin{background:none;border:0}
+.pin{
+  display:block;width:15px;height:15px;border-radius:50%;
+  background:var(--c);border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);
+}
+.insigna{
+  position:absolute;top:-7px;right:-9px;min-width:16px;height:16px;padding:0 4px;
+  border-radius:8px;background:var(--ink);color:#fff;border:1.5px solid #fff;
+  font:600 10px/13px -apple-system,system-ui,sans-serif;text-align:center;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ---------- popup ---------- */
+.leaflet-popup-content-wrapper{border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,.22)}
+.leaflet-popup-content{margin:0;width:280px!important;font-family:inherit}
+.pop{padding:14px 16px 15px}
+.pop-eticheta{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#6B6259;margin-bottom:5px}
+.pop-eticheta i{width:8px;height:8px;border-radius:50%;background:var(--c);display:block}
+.pop h3{font-size:16.5px;line-height:1.3;margin-bottom:3px}
+.pop-uat{font-size:12.5px;color:#7A7168;margin:0 0 9px}
+.pop p{margin:0 0 9px;font-size:13.5px;color:#403A34}
+.pop img{width:100%;height:120px;object-fit:cover;border-radius:4px;margin-bottom:10px;display:block}
+.pop dl{margin:0;font-size:12.5px;display:grid;grid-template-columns:auto 1fr;gap:3px 10px}
+.pop dt{color:#8A8177}
+.pop dd{margin:0;color:#403A34}
+.pop a{color:#8A4A2E}
+
+.pop-cap{padding:13px 16px 9px;font-size:12px;color:#6B6259;border-bottom:1px solid #E8E4DC}
+.pop-lista{list-style:none;margin:0;padding:5px 6px}
+.pop-lista button{
+  width:100%;display:flex;align-items:flex-start;gap:9px;text-align:left;
+  padding:8px 10px;border:0;background:none;border-radius:5px;cursor:pointer;font:inherit;
+}
+.pop-lista button:hover{background:#F2EFE9}
+.pop-lista .pastila-mica{width:9px;height:9px;border-radius:50%;flex:none;margin-top:5px}
+.pop-lista strong{display:block;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.3}
+.pop-lista em{display:block;font-style:normal;font-size:11.5px;color:#8A8177;margin-top:1px}
+.pop-inapoi{
+  display:block;width:100%;text-align:left;padding:10px 16px 8px;border:0;background:none;
+  font:inherit;font-size:12px;color:#8A4A2E;cursor:pointer;border-bottom:1px solid #E8E4DC;
+}
+.pop-inapoi:hover{text-decoration:underline}
+
+/* ---------- stări ---------- */
+#stare{
+  position:absolute;z-index:1000;left:50%;top:18px;transform:translateX(-50%);
+  background:#fff;padding:9px 16px;border-radius:5px;font-size:13px;
+  box-shadow:0 2px 12px rgba(0,0,0,.16);max-width:min(520px,90vw);
+}
+#stare.eroare{border-left:3px solid #A83E3E}
+#stare code{background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:12px}
+#stare.ascuns{display:none}
+
+/* ---------- pagina de evenimente ---------- */
+#luni{display:flex;flex-wrap:wrap;gap:5px;padding:14px 16px;border-bottom:1px solid var(--linie)}
+.luna{
+  padding:6px 10px;border-radius:5px;border:1px solid var(--linie);background:var(--ink-2);
+  color:var(--text-slab);font:inherit;font-size:12.5px;cursor:pointer;
+}
+.luna:hover{background:var(--ink-3);color:var(--text-clar)}
+.luna[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#2A2115;font-weight:600}
+.luna:disabled{opacity:.32;cursor:default}
+.luna .cnt{font-size:10.5px;opacity:.75;margin-left:4px;font-variant-numeric:tabular-nums}
+
+#lista-evenimente{flex:1;overflow-y:auto;padding:10px 12px 20px;min-height:0}
+.eveniment{
+  width:100%;text-align:left;display:block;background:var(--ink-2);border:1px solid var(--linie);
+  border-radius:6px;padding:12px 14px;margin-bottom:8px;cursor:pointer;font:inherit;color:inherit;
+}
+.eveniment:hover{background:var(--ink-3)}
+.eveniment.selectat{border-color:var(--accent)}
+.eveniment h3{font-size:15px;color:var(--text-clar);line-height:1.3}
+.eveniment .loc{font-size:12px;color:var(--text-slab);margin:2px 0 8px}
+.eveniment .data{font-size:12.5px;color:var(--accent);font-weight:600;margin-bottom:9px}
+.eveniment p{margin:0;font-size:12.5px;color:#BFB6A9;line-height:1.45}
+.pista{position:relative;height:4px;background:var(--ink);border-radius:2px;margin-top:10px;overflow:hidden}
+.pista i{position:absolute;top:0;bottom:0;background:var(--accent);border-radius:2px;min-width:3px}
+.gol{padding:26px 14px;text-align:center;color:var(--text-slab);font-size:13px}
+
+/* ---------- pagini de text ---------- */
+.pagina{max-width:680px;margin:0 auto;padding:52px 24px 80px}
+.pagina h1{font-size:30px;margin-bottom:10px}
+.pagina h2{font-size:19px;margin:32px 0 8px}
+.pagina p,.pagina li{color:#3E3831;font-size:15.5px}
+.pagina a{color:#8A4A2E}
+.pagina .inapoi{display:inline-block;margin-bottom:26px;font-size:13.5px;color:#8A4A2E;text-decoration:none}
+.pagina .inapoi:hover{text-decoration:underline}
+.pagina footer{margin-top:46px;padding-top:18px;border-top:1px solid #DCD7CD;font-size:13px;color:#7A7168}
+
+@media (max-width:820px){
+  #aplicatie{grid-template-columns:1fr;grid-template-rows:1fr auto}
+  #harta{order:1;min-height:46vh}
+  #bara{order:2;max-height:54vh}
+  #antet{padding:13px 16px 11px}
+  #antet h1{font-size:18px}
+  .leaflet-popup-content{width:250px!important}
+  .pagina{padding:34px 20px 60px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
