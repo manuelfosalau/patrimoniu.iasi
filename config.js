@@ -21,7 +21,7 @@ const CONFIG = {
   csvLocal: 'date_exemplu.csv',
 
   // Localități excluse. Comparația ignoră diacriticele și majusculele.
-  excludeUAT: ['Iasi'],
+  excludeUAT: [],
 
   centru: [47.22, 27.15],
   zoom: 9,
