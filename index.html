@@ -162,7 +162,12 @@ function detaliuHtml(r){
 function creeazaContinut(lista, marcator){
   const gazda = document.createElement('div');
 
+  // La prima construcție, Leaflet desenează el conținutul. Dacă am cere
+  // atunci o redesenare, funcția s-ar apela pe ea însăși la nesfârșit.
+  let construit = false;
+
   function reimprospateaza(){
+    if (!construit) return;
     const popup = marcator.getPopup();
     if (popup && popup.isOpen()) popup.update();
   }
@@ -209,6 +214,7 @@ function creeazaContinut(lista, marcator){
   }
 
   lista.length === 1 ? aratDetaliu(0) : aratLista();
+  construit = true;
   return gazda;
 }
 
