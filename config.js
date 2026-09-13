@@ -11,7 +11,7 @@ const CONFIG = {
 
   // Linkul CSV publicat din Google Sheets.
   // Fișier > Distribuie > Publică pe web > fila „date” > format .csv
-  urlCsvPublicat: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQSKqUDCGNUYY3a-IqaDPlTs_tggzl-vpS8bvcAicVLaIwwoL2n9zDwkXCdQFhYmbtL_46ROHzKRKf_/pubhtml?gid=0&single=true',
+  urlCsvPublicat: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQSKqUDCGNUYY3a-IqaDPlTs_tggzl-vpS8bvcAicVLaIwwoL2n9zDwkXCdQFhYmbtL_46ROHzKRKf_/pub?gid=0&single=true&output=csv',
 
   // Alternativ, dacă nu publici foaia: ID-ul foii, dintre /d/ și /edit
   idFoaie: '',
