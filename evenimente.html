@@ -21,7 +21,7 @@
 
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#221F1C">
-<link rel="stylesheet" href="stil.css">
+<link rel="stylesheet" href="stil.css?v=5">
 </head>
 <body>
 
@@ -62,7 +62,7 @@
 <div id="stare" role="status">Se încarcă datele…</div>
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<script src="config.js"></script>
+<script src="config.js?v=5"></script>
 <script>
 
 function mesaj(text, esteEroare){
@@ -166,6 +166,8 @@ function trecePrinFiltreFaraLuna(f){
 function vizibile(){
   return stare.toate.filter(f => {
     if (!trecePrinFiltreFaraLuna(f)) return false;
+    if (stare.lunaAleasa === 'recurent') return f.recurent;
+    if (f.recurent) return true;              // recurentele apar mereu, în secțiunea lor
     if (stare.lunaAleasa === null) return true;
     return luniAtinse(f.perioada).includes(stare.lunaAleasa);
   });
@@ -177,7 +179,8 @@ function deseneazaLuni(){
 
   const baza = stare.toate.filter(trecePrinFiltreFaraLuna);
   const perLuna = new Array(12).fill(0);
-  baza.forEach(f => luniAtinse(f.perioada).forEach(l => perLuna[l]++));
+  baza.filter(f => !f.recurent).forEach(f => luniAtinse(f.perioada).forEach(l => perLuna[l]++));
+  const nrRecurente = baza.filter(f => f.recurent).length;
 
   const toate = document.createElement('button');
   toate.className = 'luna';
@@ -211,11 +214,13 @@ function cardHtml(f){
   if (f.participanti) detalii.push(`<dt>Participanți</dt><dd>${esc(f.participanti)}</dd>`);
   if (f.link)         detalii.push(`<dt>Link</dt><dd><a href="${esc(f.link)}" target="_blank" rel="noopener">pagina evenimentului</a></dd>`);
 
-  const data = f.perioada
-    ? esc(formateazaPerioada(f.perioada)) + (f.perioada.aproximativ ? ' <em>(aproximativ)</em>' : '')
-    : esc(f.perioadaText || 'perioadă neprecizată');
+  const data = f.recurent
+    ? esc(f.perioadaText) + ' <em>(fără dată fixă)</em>'
+    : (f.perioada
+        ? esc(formateazaPerioada(f.perioada)) + (f.perioada.aproximativ ? ' <em>(aproximativ)</em>' : '')
+        : esc(f.perioadaText || 'perioadă neprecizată'));
 
-  return `<article class="festival" style="--c:${f.culoare}">
+  return `<article class="festival${f.recurent ? ' recurent' : ''}" style="--c:${f.culoare}">
     <div class="chip"><i></i>${esc(f.categorie)}</div>
     <h3>${esc(f.denumire)}</h3>
     <p class="data">${data}</p>
@@ -235,15 +240,22 @@ function deseneazaLista(){
     return;
   }
 
-  const cuData = lista.filter(f => f.perioada)
+  const cuData = lista.filter(f => !f.recurent && f.perioada)
                       .sort((a,b) => a.perioada.inceput - b.perioada.inceput);
-  const faraData = lista.filter(f => !f.perioada);
+  const recurente = lista.filter(f => f.recurent);
+  const faraData  = lista.filter(f => !f.recurent && !f.perioada);
+
+  const sectiune = (titlu, elemente) => elemente.length
+    ? `<h2 class="titlu-sectiune">${titlu}<span class="numar">${elemente.length}</span></h2>
+       <div class="grila">${elemente.map(cardHtml).join('')}</div>`
+    : '';
 
   let html = cuData.length ? `<div class="grila">${cuData.map(cardHtml).join('')}</div>` : '';
-  if (faraData.length){
-    html += `<h2 class="titlu-sectiune">Perioadă neprecizată
-             <span class="numar">${faraData.length}</span></h2>
-             <div class="grila">${faraData.map(cardHtml).join('')}</div>`;
+  if (stare.lunaAleasa === 'recurent'){
+    html = `<div class="grila">${recurente.map(cardHtml).join('')}</div>`;
+  } else {
+    html += sectiune('Evenimente recurente', recurente);
+    html += sectiune('Perioadă neprecizată', faraData);
   }
   gazda.innerHTML = html;
 }

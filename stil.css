@@ -144,6 +144,8 @@ input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;cursor:po
 .luna:hover:not(:disabled){border-color:#A89E8E;color:var(--ink)}
 .luna[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#F7F6F3;font-weight:600}
 .luna:disabled{opacity:.36;cursor:default}
+.luna.recurenta{margin-left:auto;border-style:dashed}
+.luna.recurenta[aria-pressed="true"]{border-style:solid}
 .luna .cnt{font-size:10.5px;opacity:.72;margin-left:5px;font-variant-numeric:tabular-nums}
 
 .comutator{flex:1;text-align:center}
@@ -165,6 +167,7 @@ input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;cursor:po
 .festival dt{color:#8A8177}
 .festival dd{margin:0;color:#403A34}
 .festival a{color:#8A4A2E}
+.festival.recurent{border-left-style:dashed;background:#FCFBF9}
 .festival .zona{
   position:absolute;top:14px;right:14px;font-size:10.5px;color:#8A8177;
   border:1px solid #E2DDD3;border-radius:3px;padding:1px 6px;

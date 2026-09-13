@@ -77,8 +77,8 @@ const CULOARE_IMPLICITA = '#5B7C99';
 const FESTIVALURI = {
 
   surse: [
-    { eticheta: 'Oras',  url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR2m0ob7kRyIJ5fmf5hqKHYnie_Yd9Pn1NE9gGKitelBxfQQVxA74ndZ31_q0ulpVn16dbsxdZtWr7N/pub?gid=322332200&single=true&output=csv' },
-    { eticheta: 'Judet', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR2m0ob7kRyIJ5fmf5hqKHYnie_Yd9Pn1NE9gGKitelBxfQQVxA74ndZ31_q0ulpVn16dbsxdZtWr7N/pub?gid=0&single=true&output=csv' }
+    { eticheta: 'Oraș',  url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR2m0ob7kRyIJ5fmf5hqKHYnie_Yd9Pn1NE9gGKitelBxfQQVxA74ndZ31_q0ulpVn16dbsxdZtWr7N/pub?gid=322332200&single=true&output=csv' },
+    { eticheta: 'Județ', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR2m0ob7kRyIJ5fmf5hqKHYnie_Yd9Pn1NE9gGKitelBxfQQVxA74ndZ31_q0ulpVn16dbsxdZtWr7N/pub?gid=0&single=true&output=csv' }
   ],
 
   // Numele coloanelor din acel tabel. Schimbă doar partea din dreapta.
@@ -107,6 +107,19 @@ function potrivesteCategorie(text){
   if (!t) return { eticheta:'Neîncadrate', culoare:CULOARE_IMPLICITA };
   const gasit = FESTIVALURI.categorii.find(c => c.chei.some(k => t.includes(k)));
   return gasit || { eticheta: text.toString().trim(), culoare: CULOARE_IMPLICITA };
+}
+
+// Evenimente fără dată fixă, a căror coloană de perioadă exprimă o frecvență.
+// Ele nu aparțin unei luni anume și primesc o secțiune proprie.
+const CUVINTE_RECURENTA = [
+  'zilnic','saptamanal','bisaptamanal','bilunar','lunar','trimestrial',
+  'semestrial','permanent','recurent','periodic','sezonier','continuu',
+  'in fiecare','la fiecare','ori de cate ori','weekend','pe tot parcursul'
+];
+
+function esteRecurent(perioada, categorie){
+  const t = fara(perioada) + ' ' + fara(categorie);
+  return CUVINTE_RECURENTA.some(k => t.includes(k));
 }
 
 const LUNI = ['ianuarie','februarie','martie','aprilie','mai','iunie',
@@ -365,6 +378,12 @@ async function incarcaDate(){
 }
 
 function eroareIncarcare(err){
+  // Eroare de cod, nu de date: de obicei un config.js vechi, servit din cache
+  if (err instanceof ReferenceError || err instanceof TypeError){
+    return `Eroare în cod: <code>${esc(err.message)}</code>. Cel mai probabil browserul ` +
+           'folosește o versiune veche a fișierului <code>config.js</code>. ' +
+           'Golește memoria cache și reîncarcă pagina.';
+  }
   if (location.protocol === 'file:'){
     return 'Pagina rulează direct de pe disc (<code>file://</code>), iar browserul blochează ' +
            'cererile către Google. Pornește un server local: <code>python3 -m http.server</code> ' +
@@ -389,7 +408,9 @@ const FESTIVALURI_DEMO = `Nr.crt.,Nume festival,Perioada aproximativă,Număr ap
 3,Serile de jazz,iulie,2500,Muzică & entertainment,Asociația culturală,https://exemplu.ro,DA
 4,Forumul turismului regional,03.10-05.10,600,"MICE, business & knowledge",Consiliul Județean Iași,,DA
 5,Târgul meșteșugarilor,28 decembrie - 3 ianuarie,3000,Tradiții & spiritualitate și gastronomie,Muzeul etnografic,,DA
-6,Festival fără dată stabilită,de anunțat,,Muzică & entertainment,Organizator local,,DA`;
+6,Festival fără dată stabilită,de anunțat,,Muzică & entertainment,Organizator local,,DA
+7,Târgul de weekend al producătorilor,săptămânal,800,Tradiții & spiritualitate și gastronomie,Asociația producătorilor,,DA
+8,Seri de lectură publică,lunar,150,Cultură & industrii creative,Biblioteca județeană,https://exemplu.ro,DA`;
 
 async function incarcaFestivaluri(){
   const surse = FESTIVALURI.surse.filter(s => s.url);
@@ -423,12 +444,14 @@ async function incarcaFestivaluri(){
       if (fara(r[C.activ]) === 'nu') return;
 
       const cat = potrivesteCategorie(r[C.categorie]);
+      const recurent = esteRecurent(r[C.perioada], r[C.categorie]);
 
       festivaluri.push({
         denumire,
         zona:         bucata.eticheta,
+        recurent,
         perioadaText: r[C.perioada] || '',
-        perioada:     parsePerioada(r[C.perioada]),
+        perioada:     recurent ? null : parsePerioada(r[C.perioada]),
         participanti: r[C.participanti] || '',
         categorie:    cat.eticheta,
         culoare:      cat.culoare,
