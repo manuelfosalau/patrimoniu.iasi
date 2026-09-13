@@ -130,31 +130,54 @@ input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;cursor:po
 #stare code{background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:12px}
 #stare.ascuns{display:none}
 
-/* ---------- pagina de evenimente ---------- */
-#luni{display:flex;flex-wrap:wrap;gap:5px;padding:14px 16px;border-bottom:1px solid var(--linie)}
-.luna{
-  padding:6px 10px;border-radius:5px;border:1px solid var(--linie);background:var(--ink-2);
-  color:var(--text-slab);font:inherit;font-size:12.5px;cursor:pointer;
-}
-.luna:hover{background:var(--ink-3);color:var(--text-clar)}
-.luna[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#2A2115;font-weight:600}
-.luna:disabled{opacity:.32;cursor:default}
-.luna .cnt{font-size:10.5px;opacity:.75;margin-left:4px;font-variant-numeric:tabular-nums}
+/* ---------- pagina de festivaluri ---------- */
+#continut{display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--hartie)}
 
-#lista-evenimente{flex:1;overflow-y:auto;padding:10px 12px 20px;min-height:0}
-.eveniment{
-  width:100%;text-align:left;display:block;background:var(--ink-2);border:1px solid var(--linie);
-  border-radius:6px;padding:12px 14px;margin-bottom:8px;cursor:pointer;font:inherit;color:inherit;
+#luni{
+  display:flex;flex-wrap:wrap;gap:5px;padding:16px 22px;
+  border-bottom:1px solid #DCD7CD;background:#FBFAF8;flex:none;
 }
-.eveniment:hover{background:var(--ink-3)}
-.eveniment.selectat{border-color:var(--accent)}
-.eveniment h3{font-size:15px;color:var(--text-clar);line-height:1.3}
-.eveniment .loc{font-size:12px;color:var(--text-slab);margin:2px 0 8px}
-.eveniment .data{font-size:12.5px;color:var(--accent);font-weight:600;margin-bottom:9px}
-.eveniment p{margin:0;font-size:12.5px;color:#BFB6A9;line-height:1.45}
-.pista{position:relative;height:4px;background:var(--ink);border-radius:2px;margin-top:10px;overflow:hidden}
-.pista i{position:absolute;top:0;bottom:0;background:var(--accent);border-radius:2px;min-width:3px}
-.gol{padding:26px 14px;text-align:center;color:var(--text-slab);font-size:13px}
+.luna{
+  padding:6px 11px;border-radius:5px;border:1px solid #D6D0C5;background:#fff;
+  color:#5C554C;font:inherit;font-size:12.5px;cursor:pointer;
+}
+.luna:hover:not(:disabled){border-color:#A89E8E;color:var(--ink)}
+.luna[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#F7F6F3;font-weight:600}
+.luna:disabled{opacity:.36;cursor:default}
+.luna .cnt{font-size:10.5px;opacity:.72;margin-left:5px;font-variant-numeric:tabular-nums}
+
+.comutator{flex:1;text-align:center}
+.comutator[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#2A2115;font-weight:600}
+
+#lista-festivaluri{flex:1;overflow-y:auto;padding:20px 22px 36px;min-height:0}
+.grila{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:14px}
+
+.festival{
+  position:relative;background:#fff;border:1px solid #E2DDD3;border-left:3px solid var(--c);
+  border-radius:6px;padding:15px 16px 14px;
+}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#6B6259;margin-bottom:6px}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--c);display:block;flex:none}
+.festival h3{font-size:16.5px;line-height:1.3;color:var(--ink);margin-bottom:4px}
+.festival .data{margin:0 0 2px;font-size:13.5px;font-weight:600;color:var(--c)}
+.festival .data em{font-style:normal;font-weight:400;color:#8A8177;font-size:12px}
+.festival dl{margin:11px 0 0;font-size:12.5px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px}
+.festival dt{color:#8A8177}
+.festival dd{margin:0;color:#403A34}
+.festival a{color:#8A4A2E}
+.festival .zona{
+  position:absolute;top:14px;right:14px;font-size:10.5px;color:#8A8177;
+  border:1px solid #E2DDD3;border-radius:3px;padding:1px 6px;
+}
+
+.pista{position:relative;display:block;height:4px;background:#EDE9E1;border-radius:2px;margin-top:10px;overflow:hidden}
+.pista i{position:absolute;top:0;bottom:0;background:var(--c);border-radius:2px;min-width:3px}
+
+.titlu-sectiune{
+  font-size:15px;color:#6B6259;margin:30px 0 12px;padding-top:18px;
+  border-top:1px solid #DCD7CD;display:flex;align-items:center;gap:9px;
+}
+.gol{padding:40px 14px;text-align:center;color:#8A8177;font-size:13.5px}
 
 /* ---------- pagini de text ---------- */
 .pagina{max-width:680px;margin:0 auto;padding:52px 24px 80px}
@@ -174,5 +197,10 @@ input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;cursor:po
   #antet h1{font-size:18px}
   .leaflet-popup-content{width:250px!important}
   .pagina{padding:34px 20px 60px}
+  #continut{order:1;min-height:0;overflow:auto}
+  #bara{order:2;max-height:46vh}
+  .grila{grid-template-columns:1fr}
+  #luni{padding:12px 16px}
+  #lista-festivaluri{padding:16px 16px 30px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}

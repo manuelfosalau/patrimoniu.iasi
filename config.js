@@ -21,7 +21,7 @@ const CONFIG = {
   csvLocal: 'date_exemplu.csv',
 
   // Localități excluse. Comparația ignoră diacriticele și majusculele.
-  excludeUAT: [],
+  excludeUAT: ['Iasi'],
 
   centru: [47.22, 27.15],
   zoom: 9,
@@ -67,6 +67,48 @@ const CATEGORII = [
 ];
 const CULOARE_IMPLICITA = '#5B7C99';
 
+/* ==========================================================================
+   FESTIVALURI
+   Tabel separat, cu structură proprie. Fiecare foaie se publică individual
+   (Fișier > Distribuie > Publică pe web, se alege foaia, format .csv)
+   și produce un link cu alt gid. Le pui pe amândouă aici.
+   ========================================================================== */
+
+const FESTIVALURI = {
+
+  surse: [
+    { eticheta: 'Oras',  url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR2m0ob7kRyIJ5fmf5hqKHYnie_Yd9Pn1NE9gGKitelBxfQQVxA74ndZ31_q0ulpVn16dbsxdZtWr7N/pub?gid=322332200&single=true&output=csv' },
+    { eticheta: 'Judet', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR2m0ob7kRyIJ5fmf5hqKHYnie_Yd9Pn1NE9gGKitelBxfQQVxA74ndZ31_q0ulpVn16dbsxdZtWr7N/pub?gid=0&single=true&output=csv' }
+  ],
+
+  // Numele coloanelor din acel tabel. Schimbă doar partea din dreapta.
+  coloane: {
+    denumire:     'Nume festival',
+    perioada:     'Perioada aproximativă',
+    participanti: 'Număr aproximativ de participanți',
+    categorie:    'Categoria',
+    organizator:  'Organizator',
+    link:         'Link',
+    activ:        'activ'        // coloană adăugată de tine: NU ascunde rândul
+  },
+
+  // Cuvintele-cheie sunt folosite ca să recunoască scrierea din tabel
+  // chiar dacă diferă diacriticele, „și” față de „&”, sau ordinea.
+  categorii: [
+    { eticheta:'Cultură & industrii creative',             culoare:'#A85A3E', chei:['cultura','creativ'] },
+    { eticheta:'Muzică & entertainment',                   culoare:'#6E4A63', chei:['muzica','entertainment'] },
+    { eticheta:'Tradiții & spiritualitate și gastronomie', culoare:'#B58A29', chei:['traditii','spiritualitate','gastronomie'] },
+    { eticheta:'MICE, business & knowledge',               culoare:'#4A7186', chei:['mice','business','knowledge'] }
+  ]
+};
+
+function potrivesteCategorie(text){
+  const t = fara(text);
+  if (!t) return { eticheta:'Neîncadrate', culoare:CULOARE_IMPLICITA };
+  const gasit = FESTIVALURI.categorii.find(c => c.chei.some(k => t.includes(k)));
+  return gasit || { eticheta: text.toString().trim(), culoare: CULOARE_IMPLICITA };
+}
+
 const LUNI = ['ianuarie','februarie','martie','aprilie','mai','iunie',
               'iulie','august','septembrie','octombrie','noiembrie','decembrie'];
 const LUNI_SCURT = ['ian','feb','mar','apr','mai','iun','iul','aug','sep','oct','nov','dec'];
@@ -110,38 +152,105 @@ function etichetaCategorie(cheie){
 
 /* ==========================================================================
    PERIOADE
-   Acceptă 10.05-18.05, 10.05.2026-18.05.2026, 15.08, cu sau fără spații,
-   cu cratimă obișnuită sau linie de dialog.
+   Acceptă 10.05-18.05, 15.08, 10.05.2026-18.05.2026, dar și forme scrise
+   în cuvinte: „10-18 mai”, „28 decembrie - 3 ianuarie”, „mai-iunie”, „iulie”.
+   Perioadele exprimate doar prin lună sunt marcate ca aproximative.
    ========================================================================== */
+
+function indexLuna(cuvant){
+  const c = fara(cuvant);
+  if (!c) return -1;
+  let i = LUNI.findIndex(l => fara(l) === c);
+  if (i >= 0) return i;
+  i = LUNI_SCURT.findIndex(l => fara(l) === c);
+  if (i >= 0) return i;
+  // prefixe: „ianuar”, „febr”, „sept”
+  i = LUNI.findIndex(l => fara(l).startsWith(c) && c.length >= 3);
+  return i;
+}
+
+function ultimaZi(an, luna){ return new Date(an, luna + 1, 0).getDate(); }
 
 function parsePerioada(text, an){
   if (!text) return null;
   an = an || CONFIG.anEvenimente;
 
-  const bucati = text.toString().trim().split(/\s*[-–—]\s*/);
-  const capete = bucati.map(b => {
-    const m = b.trim().match(/^(\d{1,2})[.\/](\d{1,2})(?:[.\/](\d{2,4}))?$/);
-    if (!m) return null;
-    let anul = m[3] ? parseInt(m[3], 10) : an;
-    if (anul < 100) anul += 2000;
-    const zi = parseInt(m[1], 10), luna = parseInt(m[2], 10);
-    if (luna < 1 || luna > 12 || zi < 1 || zi > 31) return null;
-    return new Date(anul, luna - 1, zi);
-  });
+  const brut = text.toString().trim();
+  if (!brut) return null;
+  const t = fara(brut).replace(/\s+/g, ' ');
 
-  if (!capete[0]) return null;
-  const inceput = capete[0];
-  let sfarsit = capete.length > 1 && capete[1] ? capete[1] : new Date(inceput);
+  const rezultat = (zi1, luna1, zi2, luna2, aproximativ, an1, an2) => {
+    if (luna1 < 0 || luna2 < 0) return null;
+    const inceput = new Date(an1 || an, luna1, zi1);
+    const sfarsit = new Date(an2 || an1 || an, luna2, zi2);
+    if (sfarsit < inceput) sfarsit.setFullYear(sfarsit.getFullYear() + 1);
+    return { inceput, sfarsit, aproximativ: !!aproximativ, brut };
+  };
 
-  // 28.12-03.01 înseamnă că sfârșitul e în anul următor
-  if (sfarsit < inceput) sfarsit.setFullYear(sfarsit.getFullYear() + 1);
+  let m;
 
-  return { inceput, sfarsit };
+  // 10.05-18.05 sau 10.05.2026-18.05.2026 sau 15.08
+  const bucati = brut.split(/\s*[-–—]\s*/);
+  const numeric = /^(\d{1,2})[.\/](\d{1,2})(?:[.\/](\d{2,4}))?$/;
+  if (numeric.test(bucati[0].trim())){
+    const capete = bucati.map(b => {
+      const g = b.trim().match(numeric);
+      if (!g) return null;
+      let anul = g[3] ? parseInt(g[3], 10) : an;
+      if (anul < 100) anul += 2000;
+      const zi = parseInt(g[1], 10), luna = parseInt(g[2], 10) - 1;
+      if (luna < 0 || luna > 11 || zi < 1 || zi > 31) return null;
+      return { zi, luna, anul };
+    });
+    if (capete[0]){
+      const a = capete[0];
+      const b = (capete.length > 1 && capete[1]) ? capete[1] : a;
+      return rezultat(a.zi, a.luna, b.zi, b.luna, false, a.anul, b.anul);
+    }
+  }
+
+  // 28 decembrie - 3 ianuarie
+  m = t.match(/^(\d{1,2})\s+([a-z]+)\s*[-–—]\s*(\d{1,2})\s+([a-z]+)/);
+  if (m) return rezultat(+m[1], indexLuna(m[2]), +m[3], indexLuna(m[4]), false);
+
+  // 10-18 mai
+  m = t.match(/^(\d{1,2})\s*[-–—]\s*(\d{1,2})\s+([a-z]+)/);
+  if (m){
+    const luna = indexLuna(m[3]);
+    return rezultat(+m[1], luna, +m[2], luna, false);
+  }
+
+  // 15 august
+  m = t.match(/^(\d{1,2})\s+([a-z]+)/);
+  if (m){
+    const luna = indexLuna(m[2]);
+    if (luna >= 0) return rezultat(+m[1], luna, +m[1], luna, false);
+  }
+
+  // mai - iunie
+  m = t.match(/^([a-z]+)\s*[-–—]\s*([a-z]+)/);
+  if (m){
+    const l1 = indexLuna(m[1]), l2 = indexLuna(m[2]);
+    if (l1 >= 0 && l2 >= 0) return rezultat(1, l1, ultimaZi(an, l2), l2, true);
+  }
+
+  // o singură lună, oriunde în text: „sfârșitul lunii mai”, „iulie 2026”
+  const cuvinte = t.split(/[^a-z]+/).filter(Boolean);
+  for (const cuvant of cuvinte){
+    const luna = indexLuna(cuvant);
+    if (luna >= 0) return rezultat(1, luna, ultimaZi(an, luna), luna, true);
+  }
+
+  return null;
 }
 
 function formateazaPerioada(p){
   if (!p) return '';
   const zi = d => `${d.getDate()} ${LUNI[d.getMonth()]}`;
+  if (p.aproximativ){
+    if (p.inceput.getMonth() === p.sfarsit.getMonth()) return LUNI[p.inceput.getMonth()];
+    return `${LUNI[p.inceput.getMonth()]} – ${LUNI[p.sfarsit.getMonth()]}`;
+  }
   if (p.inceput.getTime() === p.sfarsit.getTime()) return zi(p.inceput);
   if (p.inceput.getMonth() === p.sfarsit.getMonth())
     return `${p.inceput.getDate()}–${p.sfarsit.getDate()} ${LUNI[p.sfarsit.getMonth()]}`;
@@ -264,4 +373,71 @@ function eroareIncarcare(err){
   return `Datele nu au putut fi citite (${esc(err.message)}). Deschide linkul din ` +
          '<code>urlCsvPublicat</code> într-o filă nouă: dacă nu vezi text CSV, ' +
          'linkul e greșit sau publicarea pe web a fost oprită.';
+}
+
+
+/* ==========================================================================
+   ÎNCĂRCAREA FESTIVALURILOR
+   Citește toate foile configurate în FESTIVALURI.surse și le unește.
+   Rândurile fără perioadă lizibilă nu sunt aruncate: ajung într-o secțiune
+   separată, ca să vezi ce mai e de completat.
+   ========================================================================== */
+
+const FESTIVALURI_DEMO = `Nr.crt.,Nume festival,Perioada aproximativă,Număr aproximativ de participanți,Categoria,Organizator,Link,activ
+1,Festivalul de muzică veche,10-18 mai,4000,Cultură & industrii creative,Primăria comunei,https://exemplu.ro,DA
+2,Zilele recoltei,12.09-14.09,9000,Tradiții & spiritualitate și gastronomie,Consiliul local,,DA
+3,Serile de jazz,iulie,2500,Muzică & entertainment,Asociația culturală,https://exemplu.ro,DA
+4,Forumul turismului regional,03.10-05.10,600,"MICE, business & knowledge",Consiliul Județean Iași,,DA
+5,Târgul meșteșugarilor,28 decembrie - 3 ianuarie,3000,Tradiții & spiritualitate și gastronomie,Muzeul etnografic,,DA
+6,Festival fără dată stabilită,de anunțat,,Muzică & entertainment,Organizator local,,DA`;
+
+async function incarcaFestivaluri(){
+  const surse = FESTIVALURI.surse.filter(s => s.url);
+  const C = FESTIVALURI.coloane;
+  let bucati = [];
+  let sursa = '';
+
+  if (surse.length){
+    for (const s of surse){
+      const raspuns = await fetch(faraCache(s.url));
+      if (!raspuns.ok) throw new Error(`${s.eticheta}: HTTP ${raspuns.status}`);
+      bucati.push({ eticheta: s.eticheta, text: await raspuns.text() });
+    }
+    sursa = 'Google Sheets';
+  } else {
+    bucati = [{ eticheta: 'Demo', text: FESTIVALURI_DEMO }];
+    sursa = 'date demonstrative';
+  }
+
+  const festivaluri = [];
+
+  bucati.forEach(bucata => {
+    const brut = Papa.parse(bucata.text.trim(), { header:true, skipEmptyLines:true }).data;
+
+    brut.forEach(intrare => {
+      const r = {};
+      Object.keys(intrare).forEach(k => { r[k.trim()] = (intrare[k] || '').toString().trim(); });
+
+      const denumire = r[C.denumire];
+      if (!denumire) return;
+      if (fara(r[C.activ]) === 'nu') return;
+
+      const cat = potrivesteCategorie(r[C.categorie]);
+
+      festivaluri.push({
+        denumire,
+        zona:         bucata.eticheta,
+        perioadaText: r[C.perioada] || '',
+        perioada:     parsePerioada(r[C.perioada]),
+        participanti: r[C.participanti] || '',
+        categorie:    cat.eticheta,
+        culoare:      cat.culoare,
+        organizator:  r[C.organizator] || '',
+        link:         r[C.link] || '',
+        _text:        fara(`${denumire} ${r[C.organizator]} ${r[C.categorie]}`)
+      });
+    });
+  });
+
+  return { festivaluri, sursa };
 }
