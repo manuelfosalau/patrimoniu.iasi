@@ -2,7 +2,8 @@
 
 > Hartă interactivă a patrimoniului natural, material și imaterial din județul Iași,
 > realizată ca instrument de lucru pentru strategia de turism a județului.
-> Municipiul Iași este exclus intenționat din setul de date.
+> Municipiul Iași este tratat separat: obiectivele din oraș apar doar
+> după ce vizitatorul intră în conturul unității administrative.
 
 Datele acoperă patru categorii: patrimoniu natural (arii protejate SCI, SPA și de
 interes local), patrimoniu material (monumente de clasă A, muzee și colecții, conace

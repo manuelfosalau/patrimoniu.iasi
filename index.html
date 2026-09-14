@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Harta patrimoniului județului Iași</title>
+<title>Atlasul patrimoniului județului Iași</title>
 <meta name="description" content="Hartă interactivă a patrimoniului natural, material și imaterial din județul Iași: arii protejate, monumente, muzee, conace, meșteșuguri, producători locali și evenimente.">
 <link rel="canonical" href="https://manuelfosalau.github.io/patrimoniu.iasi/">
 
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ro_RO">
-<meta property="og:site_name" content="Harta patrimoniului județului Iași">
-<meta property="og:title" content="Harta patrimoniului județului Iași">
+<meta property="og:site_name" content="Atlasul patrimoniului județului Iași">
+<meta property="og:title" content="Atlasul patrimoniului județului Iași">
 <meta property="og:description" content="Arii protejate, monumente, muzee, conace, meșteșuguri și evenimente din județul Iași, pe o hartă interactivă.">
 <meta property="og:url" content="https://manuelfosalau.github.io/patrimoniu.iasi/">
 <meta property="og:image" content="https://manuelfosalau.github.io/patrimoniu.iasi/og-image.png">
@@ -20,16 +20,19 @@
 <meta name="twitter:card" content="summary_large_image">
 
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#221F1C">
+<meta name="theme-color" content="#F2F3F0">
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Spectral:ital,wght@0,500;0,600;1,500&display=swap">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="stil.css?v=5">
+<link rel="stylesheet" href="stil.css?v=6">
 
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Harta patrimoniului județului Iași",
+  "name": "Atlasul patrimoniului județului Iași",
   "url": "https://manuelfosalau.github.io/patrimoniu.iasi/",
   "applicationCategory": "BrowserApplication",
   "operatingSystem": "Web",
@@ -47,7 +50,7 @@
 <div id="aplicatie">
   <aside id="bara">
     <header id="antet">
-      <h1>Patrimoniul județului Iași</h1>
+      <h1>Atlasul patrimoniului județului Iași</h1>
       <p>Instrument de lucru pentru strategia de turism</p>
     </header>
 
@@ -58,8 +61,7 @@
     </nav>
 
     <div id="unelte">
-      <label class="sari-la-continut" for="cautare">Caută</label>
-      <input id="cautare" type="search" placeholder="Caută după denumire sau comună" autocomplete="off">
+      <input id="cautare" type="search" placeholder="Caută după denumire sau comună" autocomplete="off" aria-label="Caută un obiectiv">
       <div class="rand-unelte">
         <select id="fundal" aria-label="Fundal de hartă"></select>
         <button class="buton" id="reincarca">Reîncarcă datele</button>
@@ -69,19 +71,21 @@
     <div id="filtre"></div>
 
     <div id="subsol">
-      <span><strong id="nr-vizibile">0</strong> obiective afișate</span>
+      <span><strong id="nr-vizibile">0</strong> obiective pe hartă</span>
       <span id="moment"></span>
     </div>
   </aside>
 
-  <main id="harta" aria-label="Hartă interactivă"></main>
+  <main id="harta" aria-label="Hartă interactivă">
+    <button id="inapoi-judet" type="button" hidden>Înapoi la județ</button>
+  </main>
 </div>
 
 <div id="stare" role="status">Se încarcă datele…</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<script src="config.js?v=5"></script>
+<script src="config.js?v=6"></script>
 <script>
 
 function mesaj(text, esteEroare){
@@ -126,11 +130,32 @@ selectFundal.addEventListener('change', e => {
   fundalCurent = FUNDALURI[e.target.value].strat.addTo(harta);
 });
 
-const stratPuncte = L.layerGroup().addTo(harta);
+const stratPuncte  = L.layerGroup().addTo(harta);
+const stratOrase   = L.layerGroup().addTo(harta);
+const stratUAT     = L.layerGroup().addTo(harta);
 
 /* ---------- stare ---------- */
 
-const stare = { randuri:[], arbore:new Map(), active:new Set(), cautare:'' };
+const stare = {
+  randuri:[], arbore:new Map(), active:new Set(), cautare:'',
+  inUAT:false, limiteUAT:null, limiteJudet:null
+};
+
+/* ---------- etichete de localități ---------- */
+
+function deseneazaOrase(){
+  (CONFIG.orase || []).forEach(o => {
+    L.marker([o.lat, o.lon], {
+      icon: L.divIcon({
+        className:'eticheta-oras',
+        html:`<span>${esc(o.nume)}</span>`,
+        iconSize:[0,0], iconAnchor:[0,6]
+      }),
+      interactive:false,
+      keyboard:false
+    }).addTo(stratOrase);
+  });
+}
 
 /* ---------- popup ---------- */
 
@@ -147,23 +172,17 @@ function detaliuHtml(r){
   if (descriere) parti.push(`<p>${esc(descriere)}</p>`);
 
   const detalii = [];
-  if (r._perioada)      detalii.push(`<dt>Perioada</dt><dd>${esc(formateazaPerioada(r._perioada))}</dd>`);
-  if (r[COL.program])   detalii.push(`<dt>Program</dt><dd>${esc(r[COL.program])}</dd>`);
-  if (r[COL.web])       detalii.push(`<dt>Web</dt><dd><a href="${esc(r[COL.web])}" target="_blank" rel="noopener">pagina oficială</a></dd>`);
-  if (r[COL.sursa])     detalii.push(`<dt>Sursa</dt><dd>${esc(r[COL.sursa])}</dd>`);
+  if (r._perioada)    detalii.push(`<dt>Perioada</dt><dd>${esc(formateazaPerioada(r._perioada))}</dd>`);
+  if (r[COL.program]) detalii.push(`<dt>Program</dt><dd>${esc(r[COL.program])}</dd>`);
+  if (r[COL.web])     detalii.push(`<dt>Web</dt><dd><a href="${esc(r[COL.web])}" target="_blank" rel="noopener">pagina oficială</a></dd>`);
   if (detalii.length) parti.push(`<dl>${detalii.join('')}</dl>`);
 
   parti.push('</div>');
   return parti.join('');
 }
 
-// Construiește conținutul popup-ului pentru un grup de obiective aflate
-// la aceleași coordonate. Cu un singur obiectiv arată direct detaliul.
 function creeazaContinut(lista, marcator){
   const gazda = document.createElement('div');
-
-  // La prima construcție, Leaflet desenează el conținutul. Dacă am cere
-  // atunci o redesenare, funcția s-ar apela pe ea însăși la nesfârșit.
   let construit = false;
 
   function reimprospateaza(){
@@ -174,7 +193,6 @@ function creeazaContinut(lista, marcator){
 
   function aratLista(){
     gazda.innerHTML = '';
-
     const cap = document.createElement('div');
     cap.className = 'pop-cap';
     cap.textContent = `${lista.length} obiective la aceeași locație`;
@@ -230,17 +248,82 @@ function creeazaMarcator(lista){
     icon: L.divIcon({
       className:'ancora-pin',
       html:`<span class="pin" style="--c:${culoare}"></span>${insigna}`,
-      iconSize:[15,15], iconAnchor:[7.5,7.5], popupAnchor:[0,-9]
+      iconSize:[16,16], iconAnchor:[8,8], popupAnchor:[0,-10]
     }),
-    title: titlu,
-    riseOnHover: true,
-    alt: titlu
+    title: titlu, alt: titlu, riseOnHover: true
   });
 
   marcator.bindPopup(() => creeazaContinut(lista, marcator),
-                     { maxWidth:300, minWidth:280, autoPanPadding:[30,30] });
+                     { maxWidth:300, minWidth:286, autoPanPadding:[30,30] });
   return marcator;
 }
+
+/* ---------- conturul UAT-ului separat ---------- */
+
+async function deseneazaUAT(){
+  const inauntru = stare.randuri.filter(r => r._separat);
+  let geojson = null;
+
+  try {
+    const raspuns = await fetch(CONFIG.conturUAT);
+    if (raspuns.ok) geojson = await raspuns.json();
+  } catch (err){ /* fișierul lipsește, mergem pe forma aproximativă */ }
+
+  const aproximativ = !geojson;
+  if (!geojson) geojson = conturAproximativ(inauntru);
+  if (!geojson) return;
+
+  const strat = L.geoJSON(geojson, {
+    className:'contur-uat',
+    style:{ color:'#4A544F', weight:1.5, dashArray:'5 4',
+            fillColor:'#4A544F', fillOpacity:.07 }
+  }).addTo(stratUAT);
+
+  stare.limiteUAT = strat.getBounds();
+
+  const centru = stare.limiteUAT.getCenter();
+  const eticheta = L.marker(centru, {
+    icon: L.divIcon({
+      className:'eticheta-uat',
+      html:`<span>Municipiul Iași<small>${inauntru.length} obiective, apasă pentru a intra</small></span>`,
+      iconSize:[0,0], iconAnchor:[0,0]
+    }),
+    interactive:false, keyboard:false
+  }).addTo(stratUAT);
+
+  strat.on('click', intraInUAT);
+  strat.on('mouseover', () => strat.setStyle({ fillOpacity:.14 }));
+  strat.on('mouseout',  () => strat.setStyle({ fillOpacity: stare.inUAT ? .04 : .07 }));
+
+  stare._stratUAT = strat;
+  stare._etichetaUAT = eticheta;
+
+  if (aproximativ){
+    console.info('Conturul municipiului Iași este aproximativ. ' +
+                 'Adaugă fișierul ' + CONFIG.conturUAT + ' pentru limita reală.');
+  }
+}
+
+function intraInUAT(){
+  if (!stare.limiteUAT) return;
+  stare.inUAT = true;
+  document.getElementById('inapoi-judet').hidden = false;
+  if (stare._etichetaUAT) stratUAT.removeLayer(stare._etichetaUAT);
+  if (stare._stratUAT) stare._stratUAT.setStyle({ fillOpacity:.04, dashArray:'2 3' });
+  aplicaFiltre();
+  harta.flyToBounds(stare.limiteUAT, { padding:[40,40], duration:.7 });
+}
+
+function iesiDinUAT(){
+  stare.inUAT = false;
+  document.getElementById('inapoi-judet').hidden = true;
+  if (stare._etichetaUAT) stratUAT.addLayer(stare._etichetaUAT);
+  if (stare._stratUAT) stare._stratUAT.setStyle({ fillOpacity:.07, dashArray:'5 4' });
+  aplicaFiltre();
+  if (stare.limiteJudet) harta.flyToBounds(stare.limiteJudet, { padding:[40,40], maxZoom:11, duration:.7 });
+}
+
+document.getElementById('inapoi-judet').addEventListener('click', iesiDinUAT);
 
 /* ---------- filtre ---------- */
 
@@ -318,9 +401,10 @@ function deseneazaFiltre(){
 function aplicaFiltre(incadreaza){
   stratPuncte.clearLayers();
 
-  // Grupăm obiectivele vizibile după coordonate, ca să nu se ascundă unele pe altele
   const grupuri = new Map();
   stare.randuri.forEach(r => {
+    // punctele din UAT-ul separat apar doar după ce intri în el
+    if (r._separat && !stare.inUAT) return;
     if (!stare.active.has(r._cheie)) return;
     if (stare.cautare && !r._text.includes(stare.cautare)) return;
     if (!grupuri.has(r._coord)) grupuri.set(r._coord, []);
@@ -337,8 +421,11 @@ function aplicaFiltre(incadreaza){
   });
 
   document.getElementById('nr-vizibile').textContent = vizibile;
-  if (incadreaza && limite.length)
-    harta.fitBounds(L.latLngBounds(limite), { padding:[40,40], maxZoom:11 });
+
+  if (incadreaza && limite.length){
+    stare.limiteJudet = L.latLngBounds(limite);
+    harta.fitBounds(stare.limiteJudet, { padding:[40,40], maxZoom:11 });
+  }
 }
 
 document.getElementById('cautare').addEventListener('input', e => {
@@ -347,7 +434,7 @@ document.getElementById('cautare').addEventListener('input', e => {
 });
 document.getElementById('reincarca').addEventListener('click', porneste);
 
-/* ---------- contururi ---------- */
+/* ---------- contururi tematice ---------- */
 
 async function incarcaPoligoane(){
   for (const strat of CONFIG.poligoane){
@@ -356,7 +443,7 @@ async function incarcaPoligoane(){
       if (!raspuns.ok) continue;
       const geojson = await raspuns.json();
       const layer = L.geoJSON(geojson, {
-        style: { color:strat.culoare, weight:1.5, fillColor:strat.culoare, fillOpacity:.14 },
+        style: { color:strat.culoare, weight:1.2, fillColor:strat.culoare, fillOpacity:.12 },
         onEachFeature: (f, l) => {
           const p = f.properties || {};
           const nume = p.nume || p.name || p.SITENAME || strat.eticheta;
@@ -377,7 +464,6 @@ function adaugaComutatorPoligon(strat, layer){
     bloc.id = 'bloc-contururi';
     bloc.className = 'categorie';
     bloc.innerHTML = `<div class="cap-categorie" style="cursor:default">
-        <span class="pastila" style="background:transparent;border:1.5px dashed #7E7568"></span>
         <span class="nume-categorie">Contururi</span></div>
       <div class="subcategorii"></div>`;
     document.getElementById('filtre').appendChild(bloc);
@@ -406,6 +492,8 @@ async function porneste(){
   stare.randuri = rezultat.randuri;
   stare.arbore = new Map();
   stare.active = new Set();
+  stare.inUAT = false;
+  document.getElementById('inapoi-judet').hidden = true;
 
   stare.randuri.forEach(r => {
     if (!stare.arbore.has(r._categorie)) stare.arbore.set(r._categorie, new Map());
@@ -417,11 +505,16 @@ async function porneste(){
   deseneazaFiltre();
   aplicaFiltre(true);
 
+  stratUAT.clearLayers();
+  stratOrase.clearLayers();
+  deseneazaOrase();
+  await deseneazaUAT();
+
   document.getElementById('moment').textContent =
     `${rezultat.sursa}, ${new Date().toLocaleTimeString('ro-RO', {hour:'2-digit', minute:'2-digit'})}`;
 
   if (rezultat.faraCoordonate > 0){
-    mesaj(`${rezultat.faraCoordonate} rânduri au fost ignorate pentru că nu au coordonate valide.`, true);
+    mesaj(`${rezultat.faraCoordonate} rânduri nu au coordonate valide și nu apar pe hartă.`, true);
     setTimeout(() => mesaj(''), 9000);
   } else {
     mesaj('');

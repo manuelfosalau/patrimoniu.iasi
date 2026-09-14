@@ -11,7 +11,7 @@ const CONFIG = {
 
   // Linkul CSV publicat din Google Sheets.
   // Fișier > Distribuie > Publică pe web > fila „date” > format .csv
-  urlCsvPublicat: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQSKqUDCGNUYY3a-IqaDPlTs_tggzl-vpS8bvcAicVLaIwwoL2n9zDwkXCdQFhYmbtL_46ROHzKRKf_/pub?gid=0&single=true&output=csv',
+  urlCsvPublicat: '',
 
   // Alternativ, dacă nu publici foaia: ID-ul foii, dintre /d/ și /edit
   idFoaie: '',
@@ -20,8 +20,22 @@ const CONFIG = {
   // Fișier local, folosit când niciuna din variantele de mai sus nu e completată
   csvLocal: 'date_exemplu.csv',
 
-  // Localități excluse. Comparația ignoră diacriticele și majusculele.
-  excludeUAT: [],
+  // UAT tratat separat: punctele lui nu apar la deschidere, în locul lor se
+  // desenează conturul unității. Clic pe contur intră în el și afișează punctele.
+  uatSeparat: 'Iasi',
+
+  // Conturul acelui UAT. Dacă fișierul lipsește, se desenează o formă
+  // aproximativă, calculată din punctele aflate în interior.
+  conturUAT: 'date/uat-iasi.geojson',
+
+  // Localități etichetate pe hartă de la bun început
+  orase: [
+    { nume:'Iași',          lat:47.1585, lon:27.6014 },
+    { nume:'Pașcani',       lat:47.2500, lon:26.7167 },
+    { nume:'Hârlău',        lat:47.4306, lon:26.9028 },
+    { nume:'Târgu Frumos',  lat:47.2103, lon:27.0033 },
+    { nume:'Podu Iloaiei',  lat:47.2181, lon:27.2617 }
+  ],
 
   centru: [47.22, 27.15],
   zoom: 9,
@@ -60,12 +74,12 @@ const COL = {
 
 // Categoriile și culorile lor. Ordinea de aici e ordinea din interfață.
 const CATEGORII = [
-  { cheie:'patrimoniu natural',   eticheta:'Patrimoniu natural',   culoare:'#5F7F55' },
-  { cheie:'patrimoniu material',  eticheta:'Patrimoniu material',  culoare:'#A85A3E' },
-  { cheie:'patrimoniu imaterial', eticheta:'Patrimoniu imaterial', culoare:'#B58A29' },
-  { cheie:'evenimente',           eticheta:'Evenimente',           culoare:'#6E4A63' }
+  { cheie:'patrimoniu natural',   eticheta:'Patrimoniu natural',   culoare:'#2C6E49' },
+  { cheie:'patrimoniu material',  eticheta:'Patrimoniu material',  culoare:'#9E2B25' },
+  { cheie:'patrimoniu imaterial', eticheta:'Patrimoniu imaterial', culoare:'#6B3FA0' },
+  { cheie:'evenimente',           eticheta:'Evenimente',           culoare:'#A8730A' }
 ];
-const CULOARE_IMPLICITA = '#5B7C99';
+const CULOARE_IMPLICITA = '#5C665F';
 
 /* ==========================================================================
    FESTIVALURI
@@ -77,8 +91,8 @@ const CULOARE_IMPLICITA = '#5B7C99';
 const FESTIVALURI = {
 
   surse: [
-    { eticheta: 'Oraș',  url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR2m0ob7kRyIJ5fmf5hqKHYnie_Yd9Pn1NE9gGKitelBxfQQVxA74ndZ31_q0ulpVn16dbsxdZtWr7N/pub?gid=322332200&single=true&output=csv' },
-    { eticheta: 'Județ', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR2m0ob7kRyIJ5fmf5hqKHYnie_Yd9Pn1NE9gGKitelBxfQQVxA74ndZ31_q0ulpVn16dbsxdZtWr7N/pub?gid=0&single=true&output=csv' }
+    { eticheta: 'Oraș',  url: '' },
+    { eticheta: 'Județ', url: '' }
   ],
 
   // Numele coloanelor din acel tabel. Schimbă doar partea din dreapta.
@@ -95,10 +109,10 @@ const FESTIVALURI = {
   // Cuvintele-cheie sunt folosite ca să recunoască scrierea din tabel
   // chiar dacă diferă diacriticele, „și” față de „&”, sau ordinea.
   categorii: [
-    { eticheta:'Cultură & industrii creative',             culoare:'#A85A3E', chei:['cultura','creativ'] },
-    { eticheta:'Muzică & entertainment',                   culoare:'#6E4A63', chei:['muzica','entertainment'] },
-    { eticheta:'Tradiții & spiritualitate și gastronomie', culoare:'#B58A29', chei:['traditii','spiritualitate','gastronomie'] },
-    { eticheta:'MICE, business & knowledge',               culoare:'#4A7186', chei:['mice','business','knowledge'] }
+    { eticheta:'Cultură & industrii creative',             culoare:'#9E2B25', chei:['cultura','creativ'] },
+    { eticheta:'Muzică & entertainment',                   culoare:'#6B3FA0', chei:['muzica','entertainment'] },
+    { eticheta:'Tradiții & spiritualitate și gastronomie', culoare:'#A8730A', chei:['traditii','spiritualitate','gastronomie'] },
+    { eticheta:'MICE, business & knowledge',               culoare:'#1D6F7A', chei:['mice','business','knowledge'] }
   ]
 };
 
@@ -347,7 +361,7 @@ async function incarcaDate(){
   }
 
   const brut = Papa.parse(text.trim(), { header:true, skipEmptyLines:true }).data;
-  const excluse = CONFIG.excludeUAT.map(fara);
+  const uatSeparat = fara(CONFIG.uatSeparat);
   const randuri = [];
   let faraCoordonate = 0;
 
@@ -356,7 +370,6 @@ async function incarcaDate(){
     Object.keys(intrare).forEach(k => { r[k.trim()] = (intrare[k] || '').toString().trim(); });
 
     if (fara(r[COL.activ]) === 'nu') return;
-    if (excluse.includes(fara(r[COL.uat]))) return;
 
     const lat = numar(r[COL.lat]);
     const lon = numar(r[COL.lon]);
@@ -364,6 +377,7 @@ async function incarcaDate(){
 
     r._lat = lat;
     r._lon = lon;
+    r._separat = uatSeparat && fara(r[COL.uat]) === uatSeparat;
     r._categorie = r[COL.categorie] || 'Neîncadrate';
     r._subcategorie = r[COL.subcategorie] || 'Fără subcategorie';
     r._cheie = fara(r._categorie) + '||' + fara(r._subcategorie);
@@ -463,4 +477,63 @@ async function incarcaFestivaluri(){
   });
 
   return { festivaluri, sursa };
+}
+
+
+/* ==========================================================================
+   CONTUR APROXIMATIV
+   Folosit doar cât timp lipsește fișierul real al UAT-ului: construiește
+   o înfășurătoare convexă în jurul punctelor din acea unitate și o lărgește
+   puțin, ca să nu treacă exact prin marcatori.
+   ========================================================================== */
+
+function infasuratoareConvexa(puncte){
+  if (puncte.length < 3) return null;
+  const p = puncte.slice().sort((a,b) => a[0] - b[0] || a[1] - b[1]);
+  const cruce = (o,a,b) => (a[0]-o[0])*(b[1]-o[1]) - (a[1]-o[1])*(b[0]-o[0]);
+
+  const jos = [];
+  for (const pct of p){
+    while (jos.length >= 2 && cruce(jos[jos.length-2], jos[jos.length-1], pct) <= 0) jos.pop();
+    jos.push(pct);
+  }
+  const sus = [];
+  for (let i = p.length - 1; i >= 0; i--){
+    const pct = p[i];
+    while (sus.length >= 2 && cruce(sus[sus.length-2], sus[sus.length-1], pct) <= 0) sus.pop();
+    sus.push(pct);
+  }
+  jos.pop(); sus.pop();
+  return jos.concat(sus);
+}
+
+function conturAproximativ(randuri){
+  const puncte = randuri.map(r => [r._lon, r._lat]);
+  if (!puncte.length) return null;
+
+  const cx = puncte.reduce((s,p) => s + p[0], 0) / puncte.length;
+  const cy = puncte.reduce((s,p) => s + p[1], 0) / puncte.length;
+
+  let inel = infasuratoareConvexa(puncte);
+
+  if (!inel){
+    // prea puține puncte pentru o înfășurătoare: desenăm un cerc în jurul lor
+    const raza = 0.045;
+    inel = [];
+    for (let i = 0; i < 32; i++){
+      const a = (i / 32) * Math.PI * 2;
+      inel.push([cx + Math.cos(a) * raza * 1.45, cy + Math.sin(a) * raza]);
+    }
+  } else {
+    // lărgim ușor, împingând vârfurile dinspre centru
+    inel = inel.map(([x,y]) => [cx + (x - cx) * 1.22 + 0.004 * Math.sign(x - cx),
+                                cy + (y - cy) * 1.22 + 0.003 * Math.sign(y - cy)]);
+  }
+
+  inel.push(inel[0]);
+  return {
+    type:'Feature',
+    properties:{ aproximativ:true },
+    geometry:{ type:'Polygon', coordinates:[inel] }
+  };
 }

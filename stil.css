@@ -1,209 +1,296 @@
+/* ==========================================================================
+   Atlasul patrimoniului județului Iași
+   Interfață acromatică: hârtie rece, cerneală, linii subțiri.
+   Singura culoare din pagină o poartă cele patru categorii.
+   ========================================================================== */
+
 :root{
-  --ink:#221F1C;
-  --ink-2:#2E2A26;
-  --ink-3:#3B3630;
-  --hartie:#F7F6F3;
-  --text-clar:#EDE9E2;
-  --text-slab:#A79E92;
-  --linie:#443E37;
-  --accent:#C79A4B;
-  --lat-bara:330px;
+  --hartie:#F2F3F0;
+  --panou:#FFFFFF;
+  --cerneala:#1B2320;
+  --cerneala-2:#4A544F;
+  --cerneala-3:#7C8781;
+  --linie:#DCDFD9;
+  --linie-tare:#BFC4BC;
+  --selectie:#1B2320;
+  --focus:#2B6B6F;
+
+  --natural:#2C6E49;
+  --material:#9E2B25;
+  --imaterial:#6B3FA0;
+  --evenimente:#A8730A;
+
+  --lat-bara:336px;
+  --serif:"Spectral",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
 
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{
-  font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  color:var(--ink);background:var(--hartie);
+  font:400 14.5px/1.55 var(--sans);
+  color:var(--cerneala);background:var(--hartie);
+  -webkit-font-smoothing:antialiased;
 }
-h1,h2,h3{font-family:Georgia,"Iowan Old Style","Times New Roman",serif;font-weight:600;margin:0}
+h1,h2,h3{font-family:var(--serif);font-weight:600;margin:0;letter-spacing:-.005em}
 
 .sari-la-continut{
   position:absolute;left:-9999px;top:0;z-index:3000;
-  background:#fff;color:var(--ink);padding:10px 16px;border-radius:0 0 5px 0;
+  background:var(--cerneala);color:#fff;padding:11px 18px;
 }
 .sari-la-continut:focus{left:0}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
 #aplicatie{display:grid;grid-template-columns:var(--lat-bara) 1fr;height:100%}
 
-/* ---------- bara laterală ---------- */
+/* ---------- panoul lateral ---------- */
 #bara{
-  background:var(--ink);color:var(--text-clar);
-  display:flex;flex-direction:column;min-height:0;border-right:1px solid #17150F;
+  background:var(--panou);display:flex;flex-direction:column;
+  min-height:0;border-right:1px solid var(--linie-tare);
 }
-#antet{padding:18px 20px 14px;border-bottom:1px solid var(--linie)}
-#antet h1{font-size:21px;letter-spacing:.1px;line-height:1.25}
-#antet p{margin:6px 0 0;font-size:12.5px;color:var(--text-slab)}
 
-nav.navigare{display:flex;gap:4px;padding:10px 16px;border-bottom:1px solid var(--linie)}
+#antet{padding:22px 24px 16px}
+#antet h1{font-size:23px;line-height:1.18}
+#antet p{margin:7px 0 0;font-size:12.5px;color:var(--cerneala-3);line-height:1.4}
+
+nav.navigare{display:flex;gap:22px;padding:0 24px;border-bottom:1px solid var(--linie)}
 nav.navigare a{
-  flex:1;text-align:center;padding:7px 9px;border-radius:5px;text-decoration:none;
-  font-size:13px;color:var(--text-slab);border:1px solid transparent;
+  padding:9px 0 11px;text-decoration:none;font-size:13.5px;color:var(--cerneala-3);
+  border-bottom:2px solid transparent;margin-bottom:-1px;
 }
-nav.navigare a:hover{background:var(--ink-2);color:var(--text-clar)}
-nav.navigare a[aria-current="page"]{background:var(--ink-2);color:var(--text-clar);border-color:var(--linie)}
+nav.navigare a:hover{color:var(--cerneala)}
+nav.navigare a[aria-current="page"]{color:var(--cerneala);border-bottom-color:var(--cerneala);font-weight:500}
 
-#unelte{padding:14px 20px;border-bottom:1px solid var(--linie);display:grid;gap:10px}
+#unelte{padding:16px 24px;border-bottom:1px solid var(--linie);display:grid;gap:9px}
 #cautare{
-  width:100%;padding:9px 11px;border-radius:5px;border:1px solid var(--linie);
-  background:var(--ink-2);color:var(--text-clar);font-size:14px;font-family:inherit;
+  width:100%;padding:9px 0;border:0;border-bottom:1px solid var(--linie-tare);
+  background:none;color:var(--cerneala);font:400 14px var(--sans);
 }
-#cautare::placeholder{color:#7E7568}
-:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.rand-unelte{display:flex;gap:8px}
+#cautare::placeholder{color:var(--cerneala-3)}
+#cautare:focus{outline:0;border-bottom-color:var(--cerneala)}
+
+.rand-unelte{display:flex;gap:7px}
 select,.buton{
-  flex:1;padding:8px 10px;border-radius:5px;font-size:12.5px;font-family:inherit;
-  border:1px solid var(--linie);background:var(--ink-2);color:var(--text-clar);cursor:pointer;
+  flex:1;padding:7px 9px;font:400 12.5px var(--sans);
+  border:1px solid var(--linie-tare);background:var(--panou);color:var(--cerneala-2);cursor:pointer;
 }
-.buton:hover,select:hover{background:var(--ink-3)}
+select:hover,.buton:hover{border-color:var(--cerneala-3);color:var(--cerneala)}
 
-#filtre{flex:1;overflow-y:auto;padding:6px 12px 20px;min-height:0}
-.categorie{margin-top:14px}
-.cap-categorie{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:5px;cursor:pointer;user-select:none}
-.cap-categorie:hover{background:var(--ink-2)}
-.pastila{width:10px;height:10px;border-radius:50%;flex:none}
-.nume-categorie{font-size:13.5px;font-weight:600;letter-spacing:.2px;flex:1}
-.numar{font-size:11.5px;color:var(--text-slab);font-variant-numeric:tabular-nums}
-.subcategorii{margin:2px 0 0 27px;padding-left:11px;border-left:1px solid var(--linie)}
-.subcategorie{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:4px;cursor:pointer;font-size:13px;color:#D6CFC4}
-.subcategorie:hover{background:var(--ink-2)}
+#filtre{flex:1;overflow-y:auto;padding:4px 24px 24px;min-height:0}
+
+.categorie{margin-top:18px}
+.cap-categorie{display:flex;align-items:baseline;gap:9px;cursor:pointer;user-select:none;padding:3px 0}
+.pastila{width:9px;height:9px;border-radius:50%;flex:none;align-self:center}
+.nume-categorie{
+  font-family:var(--serif);font-size:15px;font-weight:600;flex:1;line-height:1.3;
+}
+.numar{font-size:11.5px;color:var(--cerneala-3);font-variant-numeric:tabular-nums;flex:none}
+.subcategorii{margin:5px 0 0 18px;padding-left:12px;border-left:1px solid var(--linie)}
+.subcategorie{
+  display:flex;align-items:center;gap:9px;padding:4px 0;cursor:pointer;
+  font-size:13px;color:var(--cerneala-2);
+}
+.subcategorie:hover{color:var(--cerneala)}
 .subcategorie span:first-of-type{flex:1}
-input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;cursor:pointer;flex:none;margin:0}
+input[type=checkbox]{accent-color:var(--cerneala);width:13px;height:13px;cursor:pointer;flex:none;margin:0}
 
-#subsol{padding:12px 20px;border-top:1px solid var(--linie);font-size:12px;color:var(--text-slab);display:flex;justify-content:space-between;gap:10px}
-#subsol strong{color:var(--text-clar);font-weight:600;font-variant-numeric:tabular-nums}
-#subsol a{color:var(--text-slab)}
+#subsol{
+  padding:13px 24px;border-top:1px solid var(--linie);font-size:11.5px;
+  color:var(--cerneala-3);display:flex;justify-content:space-between;gap:12px;
+}
+#subsol strong{color:var(--cerneala);font-weight:500;font-variant-numeric:tabular-nums}
 
-/* ---------- hartă ---------- */
-#harta{height:100%;background:#E8E6E1}
+/* ---------- harta ---------- */
+#harta{height:100%;background:#E6E8E3;position:relative}
 
 .ancora-pin{background:none;border:0}
 .pin{
-  display:block;width:15px;height:15px;border-radius:50%;
-  background:var(--c);border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);
+  display:block;width:16px;height:16px;border-radius:50%;
+  background:var(--c);border:1.5px solid #fff;
+  box-shadow:0 0 0 1px rgba(20,28,24,.5);
 }
 .insigna{
-  position:absolute;top:-7px;right:-9px;min-width:16px;height:16px;padding:0 4px;
-  border-radius:8px;background:var(--ink);color:#fff;border:1.5px solid #fff;
-  font:600 10px/13px -apple-system,system-ui,sans-serif;text-align:center;
-  font-variant-numeric:tabular-nums;
+  position:absolute;top:-8px;right:-10px;min-width:16px;height:16px;padding:0 4px;
+  border-radius:8px;background:var(--cerneala);color:#fff;border:1.5px solid #fff;
+  font:500 10px/13px var(--sans);text-align:center;font-variant-numeric:tabular-nums;
 }
+
+/* etichete de localități, cu halou alb ca pe hărțile tipărite */
+.eticheta-oras{background:none;border:0;pointer-events:none}
+.eticheta-oras span{
+  display:block;font-family:var(--serif);font-size:13px;font-weight:500;
+  color:#2A332E;white-space:nowrap;padding-left:9px;line-height:1;
+  text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 2px #fff,1px 1px 0 #fff,-1px -1px 0 #fff;
+}
+.eticheta-oras span::before{
+  content:"";position:absolute;left:0;top:2px;width:5px;height:5px;
+  background:#2A332E;border:1px solid #fff;
+}
+
+.eticheta-uat{background:none;border:0;pointer-events:none}
+.eticheta-uat span{
+  display:block;font-family:var(--serif);font-size:14px;font-style:italic;
+  color:#2A332E;white-space:nowrap;text-align:center;line-height:1.25;
+  text-shadow:0 0 4px #fff,0 0 3px #fff,0 0 2px #fff;
+}
+.eticheta-uat small{display:block;font-family:var(--sans);font-size:10.5px;font-style:normal;color:#5C665F}
+
+.contur-uat{cursor:pointer}
+
+#inapoi-judet{
+  position:absolute;z-index:900;left:14px;top:14px;
+  padding:9px 15px;border:1px solid var(--linie-tare);background:var(--panou);
+  font:400 13px var(--sans);color:var(--cerneala);cursor:pointer;
+  box-shadow:0 1px 4px rgba(20,28,24,.14);
+}
+#inapoi-judet:hover{border-color:var(--cerneala-3)}
+#inapoi-judet[hidden]{display:none}
 
 /* ---------- popup ---------- */
-.leaflet-popup-content-wrapper{border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,.22)}
-.leaflet-popup-content{margin:0;width:280px!important;font-family:inherit}
-.pop{padding:14px 16px 15px}
-.pop-eticheta{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#6B6259;margin-bottom:5px}
-.pop-eticheta i{width:8px;height:8px;border-radius:50%;background:var(--c);display:block}
-.pop h3{font-size:16.5px;line-height:1.3;margin-bottom:3px}
-.pop-uat{font-size:12.5px;color:#7A7168;margin:0 0 9px}
-.pop p{margin:0 0 9px;font-size:13.5px;color:#403A34}
-.pop img{width:100%;height:120px;object-fit:cover;border-radius:4px;margin-bottom:10px;display:block}
-.pop dl{margin:0;font-size:12.5px;display:grid;grid-template-columns:auto 1fr;gap:3px 10px}
-.pop dt{color:#8A8177}
-.pop dd{margin:0;color:#403A34}
-.pop a{color:#8A4A2E}
+.leaflet-popup-content-wrapper{border-radius:2px;box-shadow:0 6px 24px rgba(20,28,24,.2)}
+.leaflet-popup-content{margin:0;width:286px!important;font-family:var(--sans)}
+.leaflet-popup-tip{box-shadow:none}
 
-.pop-cap{padding:13px 16px 9px;font-size:12px;color:#6B6259;border-bottom:1px solid #E8E4DC}
-.pop-lista{list-style:none;margin:0;padding:5px 6px}
+.pop{padding:16px 18px 17px}
+.pop-eticheta{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:var(--cerneala-3);margin-bottom:6px}
+.pop-eticheta i{width:8px;height:8px;border-radius:50%;background:var(--c);display:block;flex:none}
+.pop h3{font-size:18px;line-height:1.25;margin-bottom:4px}
+.pop-uat{font-size:12.5px;color:var(--cerneala-3);margin:0 0 11px}
+.pop p{margin:0 0 10px;font-size:13.5px;color:var(--cerneala-2);line-height:1.5}
+.pop img{width:100%;height:128px;object-fit:cover;margin-bottom:11px;display:block}
+.pop dl{margin:0;font-size:12.5px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;
+        padding-top:10px;border-top:1px solid var(--linie)}
+.pop dt{color:var(--cerneala-3)}
+.pop dd{margin:0;color:var(--cerneala-2)}
+.pop a{color:var(--focus)}
+
+.pop-cap{padding:15px 18px 10px;font-size:12px;color:var(--cerneala-3);border-bottom:1px solid var(--linie)}
+.pop-lista{list-style:none;margin:0;padding:6px 8px}
 .pop-lista button{
-  width:100%;display:flex;align-items:flex-start;gap:9px;text-align:left;
-  padding:8px 10px;border:0;background:none;border-radius:5px;cursor:pointer;font:inherit;
+  width:100%;display:flex;align-items:flex-start;gap:10px;text-align:left;
+  padding:8px 10px;border:0;background:none;cursor:pointer;font:inherit;
 }
-.pop-lista button:hover{background:#F2EFE9}
-.pop-lista .pastila-mica{width:9px;height:9px;border-radius:50%;flex:none;margin-top:5px}
-.pop-lista strong{display:block;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.3}
-.pop-lista em{display:block;font-style:normal;font-size:11.5px;color:#8A8177;margin-top:1px}
+.pop-lista button:hover{background:var(--hartie)}
+.pop-lista .pastila-mica{width:8px;height:8px;border-radius:50%;flex:none;margin-top:6px}
+.pop-lista strong{display:block;font-family:var(--serif);font-size:14.5px;font-weight:600;color:var(--cerneala);line-height:1.3}
+.pop-lista em{display:block;font-style:normal;font-size:11.5px;color:var(--cerneala-3);margin-top:2px}
 .pop-inapoi{
-  display:block;width:100%;text-align:left;padding:10px 16px 8px;border:0;background:none;
-  font:inherit;font-size:12px;color:#8A4A2E;cursor:pointer;border-bottom:1px solid #E8E4DC;
+  display:block;width:100%;text-align:left;padding:11px 18px 9px;border:0;background:none;
+  font:400 12px var(--sans);color:var(--focus);cursor:pointer;border-bottom:1px solid var(--linie);
 }
 .pop-inapoi:hover{text-decoration:underline}
 
 /* ---------- stări ---------- */
 #stare{
-  position:absolute;z-index:1000;left:50%;top:18px;transform:translateX(-50%);
-  background:#fff;padding:9px 16px;border-radius:5px;font-size:13px;
-  box-shadow:0 2px 12px rgba(0,0,0,.16);max-width:min(520px,90vw);
+  position:absolute;z-index:1000;left:50%;top:16px;transform:translateX(-50%);
+  background:var(--panou);padding:10px 18px;font-size:13px;
+  box-shadow:0 3px 16px rgba(20,28,24,.18);max-width:min(540px,90vw);
+  border-left:2px solid var(--cerneala);
 }
-#stare.eroare{border-left:3px solid #A83E3E}
-#stare code{background:#F0EDE7;padding:1px 5px;border-radius:3px;font-size:12px}
+#stare.eroare{border-left-color:var(--material)}
+#stare code{background:var(--hartie);padding:1px 5px;font-size:12px;font-family:ui-monospace,monospace}
 #stare.ascuns{display:none}
 
-/* ---------- pagina de festivaluri ---------- */
+/* ==========================================================================
+   Calendarul festivalurilor
+   ========================================================================== */
+
 #continut{display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--hartie)}
 
 #luni{
-  display:flex;flex-wrap:wrap;gap:5px;padding:16px 22px;
-  border-bottom:1px solid #DCD7CD;background:#FBFAF8;flex:none;
+  display:flex;flex-wrap:wrap;gap:3px;padding:16px 26px;flex:none;
+  border-bottom:1px solid var(--linie);background:var(--panou);
 }
 .luna{
-  padding:6px 11px;border-radius:5px;border:1px solid #D6D0C5;background:#fff;
-  color:#5C554C;font:inherit;font-size:12.5px;cursor:pointer;
+  padding:6px 12px;border:0;background:none;color:var(--cerneala-3);
+  font:400 13px var(--sans);cursor:pointer;border-radius:2px;
 }
-.luna:hover:not(:disabled){border-color:#A89E8E;color:var(--ink)}
-.luna[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#F7F6F3;font-weight:600}
-.luna:disabled{opacity:.36;cursor:default}
-.luna.recurenta{margin-left:auto;border-style:dashed}
-.luna.recurenta[aria-pressed="true"]{border-style:solid}
-.luna .cnt{font-size:10.5px;opacity:.72;margin-left:5px;font-variant-numeric:tabular-nums}
+.luna:hover:not(:disabled){background:var(--hartie);color:var(--cerneala)}
+.luna[aria-pressed="true"]{background:var(--selectie);color:#fff;font-weight:500}
+.luna:disabled{opacity:.3;cursor:default}
+.luna .cnt{font-size:11px;opacity:.62;margin-left:5px;font-variant-numeric:tabular-nums}
+.luna.recurenta{margin-left:auto}
 
 .comutator{flex:1;text-align:center}
-.comutator[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#2A2115;font-weight:600}
+.comutator[aria-pressed="true"]{background:var(--selectie);border-color:var(--selectie);color:#fff}
 
-#lista-festivaluri{flex:1;overflow-y:auto;padding:20px 22px 36px;min-height:0}
-.grila{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:14px}
+#lista-festivaluri{flex:1;overflow-y:auto;padding:8px 26px 40px;min-height:0}
+
+.grup-luna{margin-top:26px}
+.grup-luna:first-child{margin-top:14px}
+.grup-luna > h2{
+  font-size:15px;font-weight:500;color:var(--cerneala-3);font-style:italic;
+  padding-bottom:7px;border-bottom:1px solid var(--linie);margin-bottom:4px;
+  display:flex;justify-content:space-between;align-items:baseline;
+}
+.grup-luna > h2 .numar{font-style:normal}
 
 .festival{
-  position:relative;background:#fff;border:1px solid #E2DDD3;border-left:3px solid var(--c);
-  border-radius:6px;padding:15px 16px 14px;
+  background:var(--panou);border:1px solid transparent;border-bottom:1px solid var(--linie);
+  transition:transform .14s ease, box-shadow .14s ease, border-color .14s ease;
 }
-.chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#6B6259;margin-bottom:6px}
-.chip i{width:8px;height:8px;border-radius:50%;background:var(--c);display:block;flex:none}
-.festival h3{font-size:16.5px;line-height:1.3;color:var(--ink);margin-bottom:4px}
-.festival .data{margin:0 0 2px;font-size:13.5px;font-weight:600;color:var(--c)}
-.festival .data em{font-style:normal;font-weight:400;color:#8A8177;font-size:12px}
-.festival dl{margin:11px 0 0;font-size:12.5px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px}
-.festival dt{color:#8A8177}
-.festival dd{margin:0;color:#403A34}
-.festival a{color:#8A4A2E}
-.festival.recurent{border-left-style:dashed;background:#FCFBF9}
-.festival .zona{
-  position:absolute;top:14px;right:14px;font-size:10.5px;color:#8A8177;
-  border:1px solid #E2DDD3;border-radius:3px;padding:1px 6px;
+.festival:hover{
+  transform:translateY(-2px);
+  box-shadow:0 4px 14px rgba(20,28,24,.11);
+  border-color:var(--linie);
 }
+.festival.deschis{border-color:var(--linie-tare);box-shadow:0 4px 14px rgba(20,28,24,.09)}
 
-.pista{position:relative;display:block;height:4px;background:#EDE9E1;border-radius:2px;margin-top:10px;overflow:hidden}
-.pista i{position:absolute;top:0;bottom:0;background:var(--c);border-radius:2px;min-width:3px}
-
-.titlu-sectiune{
-  font-size:15px;color:#6B6259;margin:30px 0 12px;padding-top:18px;
-  border-top:1px solid #DCD7CD;display:flex;align-items:center;gap:9px;
+.festival-cap{
+  width:100%;display:flex;align-items:center;gap:12px;text-align:left;
+  padding:13px 16px;border:0;background:none;cursor:pointer;font:inherit;
 }
-.gol{padding:40px 14px;text-align:center;color:#8A8177;font-size:13.5px}
+.festival-cap .pastila{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.festival-cap .titlu{
+  flex:1;font-family:var(--serif);font-size:16px;font-weight:600;
+  color:var(--cerneala);line-height:1.3;
+}
+.festival-cap .cand{
+  font-size:12.5px;color:var(--cerneala-3);white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.festival-cap .sageata{
+  width:9px;height:9px;border-right:1.5px solid var(--cerneala-3);
+  border-bottom:1.5px solid var(--cerneala-3);transform:rotate(45deg) translate(-2px,-2px);
+  flex:none;transition:transform .16s ease;
+}
+.festival.deschis .sageata{transform:rotate(-135deg) translate(-2px,-2px)}
+
+.festival-detalii{padding:0 16px 15px 37px}
+.festival-detalii dl{
+  margin:0;font-size:13px;display:grid;grid-template-columns:auto 1fr;gap:5px 14px;
+  padding-top:12px;border-top:1px solid var(--linie);
+}
+.festival-detalii dt{color:var(--cerneala-3)}
+.festival-detalii dd{margin:0;color:var(--cerneala-2)}
+.festival-detalii a{color:var(--focus)}
+.festival[hidden]{display:none}
+
+.gol{padding:46px 14px;text-align:center;color:var(--cerneala-3);font-size:13.5px}
 
 /* ---------- pagini de text ---------- */
-.pagina{max-width:680px;margin:0 auto;padding:52px 24px 80px}
-.pagina h1{font-size:30px;margin-bottom:10px}
-.pagina h2{font-size:19px;margin:32px 0 8px}
-.pagina p,.pagina li{color:#3E3831;font-size:15.5px}
-.pagina a{color:#8A4A2E}
-.pagina .inapoi{display:inline-block;margin-bottom:26px;font-size:13.5px;color:#8A4A2E;text-decoration:none}
+.pagina{max-width:64ch;margin:0 auto;padding:60px 26px 90px}
+.pagina h1{font-size:32px;margin-bottom:12px;line-height:1.14}
+.pagina h2{font-size:19px;margin:36px 0 9px}
+.pagina p,.pagina li{color:var(--cerneala-2);font-size:15px;line-height:1.65}
+.pagina a{color:var(--focus)}
+.pagina .inapoi{display:inline-block;margin-bottom:30px;font-size:13.5px;color:var(--focus);text-decoration:none}
 .pagina .inapoi:hover{text-decoration:underline}
-.pagina footer{margin-top:46px;padding-top:18px;border-top:1px solid #DCD7CD;font-size:13px;color:#7A7168}
+.pagina footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--linie);font-size:13px;color:var(--cerneala-3)}
 
-@media (max-width:820px){
+@media (max-width:860px){
   #aplicatie{grid-template-columns:1fr;grid-template-rows:1fr auto}
-  #harta{order:1;min-height:46vh}
-  #bara{order:2;max-height:54vh}
-  #antet{padding:13px 16px 11px}
-  #antet h1{font-size:18px}
-  .leaflet-popup-content{width:250px!important}
-  .pagina{padding:34px 20px 60px}
-  #continut{order:1;min-height:0;overflow:auto}
-  #bara{order:2;max-height:46vh}
-  .grila{grid-template-columns:1fr}
+  #harta,#continut{order:1;min-height:44vh}
+  #bara{order:2;max-height:52vh;border-right:0;border-top:1px solid var(--linie-tare)}
+  #antet{padding:15px 18px 11px}
+  #antet h1{font-size:19px}
+  nav.navigare,#unelte,#filtre,#subsol{padding-left:18px;padding-right:18px}
+  .leaflet-popup-content{width:252px!important}
   #luni{padding:12px 16px}
-  #lista-festivaluri{padding:16px 16px 30px}
+  #lista-festivaluri{padding:6px 16px 30px}
+  .pagina{padding:38px 20px 64px}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+  .festival:hover{transform:none}
+}

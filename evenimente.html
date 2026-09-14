@@ -10,7 +10,7 @@
 
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ro_RO">
-<meta property="og:site_name" content="Harta patrimoniului județului Iași">
+<meta property="og:site_name" content="Atlasul patrimoniului județului Iași">
 <meta property="og:title" content="Calendarul festivalurilor din județul Iași">
 <meta property="og:description" content="Festivalurile din municipiul și județul Iași, luna cu luna, pe categorii.">
 <meta property="og:url" content="https://manuelfosalau.github.io/patrimoniu.iasi/evenimente.html">
@@ -20,8 +20,12 @@
 <meta name="twitter:card" content="summary_large_image">
 
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#221F1C">
-<link rel="stylesheet" href="stil.css?v=5">
+<meta name="theme-color" content="#F2F3F0">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Spectral:ital,wght@0,500;0,600;1,500&display=swap">
+<link rel="stylesheet" href="stil.css?v=6">
 </head>
 <body>
 
@@ -41,7 +45,7 @@
     </nav>
 
     <div id="unelte">
-      <input id="cautare" type="search" placeholder="Caută după nume sau organizator" autocomplete="off">
+      <input id="cautare" type="search" placeholder="Caută după nume sau organizator" autocomplete="off" aria-label="Caută un festival">
       <div class="rand-unelte" id="zone" role="group" aria-label="Filtrare după zonă"></div>
     </div>
 
@@ -62,7 +66,7 @@
 <div id="stare" role="status">Se încarcă datele…</div>
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<script src="config.js?v=5"></script>
+<script src="config.js?v=6"></script>
 <script>
 
 function mesaj(text, esteEroare){
@@ -74,35 +78,17 @@ function mesaj(text, esteEroare){
 }
 
 const stare = {
-  toate: [],
-  lunaAleasa: null,
-  zone: new Set(),
-  categorii: new Set(),
-  cautare: ''
+  toate: [], lunaAleasa: null,
+  zone: new Set(), categorii: new Set(), cautare: '',
+  deschise: new Set()
 };
-
-/* ---------- pista anuală ---------- */
-
-function pozitieInAn(data){
-  const zile = (data - new Date(data.getFullYear(), 0, 1)) / 86400000;
-  return Math.max(0, Math.min(100, (zile / 365) * 100));
-}
-
-function pistaHtml(p){
-  if (!p) return '';
-  const a = pozitieInAn(p.inceput), b = pozitieInAn(p.sfarsit);
-  const stanga = Math.min(a, b);
-  const latime = Math.max(0.8, Math.abs(b - a));
-  return `<span class="pista" aria-hidden="true"><i style="left:${stanga}%;width:${latime}%"></i></span>`;
-}
 
 /* ---------- filtre ---------- */
 
 function deseneazaZone(){
   const gazda = document.getElementById('zone');
   gazda.innerHTML = '';
-  const zone = [...new Set(stare.toate.map(f => f.zona))];
-  zone.forEach(z => {
+  [...new Set(stare.toate.map(f => f.zona))].forEach(z => {
     const buton = document.createElement('button');
     buton.className = 'buton comutator';
     buton.type = 'button';
@@ -110,7 +96,7 @@ function deseneazaZone(){
     buton.setAttribute('aria-pressed', stare.zone.has(z));
     buton.addEventListener('click', () => {
       stare.zone.has(z) ? stare.zone.delete(z) : stare.zone.add(z);
-      if (!stare.zone.size) stare.zone.add(z);   // nu lăsăm totul stins
+      if (!stare.zone.size) stare.zone.add(z);
       deseneazaZone();
       deseneazaTot();
     });
@@ -122,8 +108,7 @@ function deseneazaCategorii(){
   const gazda = document.getElementById('filtre');
   gazda.innerHTML = '';
 
-  const numar = new Map();
-  const culori = new Map();
+  const numar = new Map(), culori = new Map();
   stare.toate.forEach(f => {
     numar.set(f.categorie, (numar.get(f.categorie) || 0) + 1);
     culori.set(f.categorie, f.culoare);
@@ -167,7 +152,7 @@ function vizibile(){
   return stare.toate.filter(f => {
     if (!trecePrinFiltreFaraLuna(f)) return false;
     if (stare.lunaAleasa === 'recurent') return f.recurent;
-    if (f.recurent) return true;              // recurentele apar mereu, în secțiunea lor
+    if (f.recurent) return true;
     if (stare.lunaAleasa === null) return true;
     return luniAtinse(f.perioada).includes(stare.lunaAleasa);
   });
@@ -204,30 +189,59 @@ function deseneazaLuni(){
     });
     gazda.appendChild(buton);
   });
+
+  const recurente = document.createElement('button');
+  recurente.className = 'luna recurenta';
+  recurente.type = 'button';
+  recurente.innerHTML = `recurente<span class="cnt">${nrRecurente}</span>`;
+  recurente.setAttribute('aria-label', `Evenimente recurente, ${nrRecurente}`);
+  recurente.setAttribute('aria-pressed', stare.lunaAleasa === 'recurent');
+  recurente.disabled = nrRecurente === 0;
+  recurente.addEventListener('click', () => {
+    stare.lunaAleasa = (stare.lunaAleasa === 'recurent') ? null : 'recurent';
+    deseneazaTot();
+  });
+  gazda.appendChild(recurente);
 }
 
 /* ---------- lista ---------- */
 
-function cardHtml(f){
+function cheia(f){ return f.zona + '::' + f.denumire; }
+
+function cand(f){
+  if (f.recurent) return esc(f.perioadaText);
+  if (!f.perioada) return esc(f.perioadaText || 'fără dată');
+  return esc(formateazaPerioada(f.perioada)) + (f.perioada.aproximativ ? ' (aprox.)' : '');
+}
+
+function randHtml(f){
+  const id = cheia(f);
+  const deschis = stare.deschise.has(id);
+
   const detalii = [];
   if (f.organizator)  detalii.push(`<dt>Organizator</dt><dd>${esc(f.organizator)}</dd>`);
   if (f.participanti) detalii.push(`<dt>Participanți</dt><dd>${esc(f.participanti)}</dd>`);
-  if (f.link)         detalii.push(`<dt>Link</dt><dd><a href="${esc(f.link)}" target="_blank" rel="noopener">pagina evenimentului</a></dd>`);
+  detalii.push(`<dt>Categoria</dt><dd>${esc(f.categorie)}</dd>`);
+  detalii.push(`<dt>Zona</dt><dd>${esc(f.zona)}</dd>`);
+  if (f.link) detalii.push(`<dt>Link</dt><dd><a href="${esc(f.link)}" target="_blank" rel="noopener">pagina evenimentului</a></dd>`);
 
-  const data = f.recurent
-    ? esc(f.perioadaText) + ' <em>(fără dată fixă)</em>'
-    : (f.perioada
-        ? esc(formateazaPerioada(f.perioada)) + (f.perioada.aproximativ ? ' <em>(aproximativ)</em>' : '')
-        : esc(f.perioadaText || 'perioadă neprecizată'));
-
-  return `<article class="festival${f.recurent ? ' recurent' : ''}" style="--c:${f.culoare}">
-    <div class="chip"><i></i>${esc(f.categorie)}</div>
-    <h3>${esc(f.denumire)}</h3>
-    <p class="data">${data}</p>
-    ${pistaHtml(f.perioada)}
-    ${detalii.length ? `<dl>${detalii.join('')}</dl>` : ''}
-    <span class="zona">${esc(f.zona)}</span>
+  return `<article class="festival${deschis ? ' deschis' : ''}" style="--c:${f.culoare}">
+    <button class="festival-cap" type="button" data-id="${esc(id)}" aria-expanded="${deschis}">
+      <span class="pastila"></span>
+      <span class="titlu">${esc(f.denumire)}</span>
+      <span class="cand">${cand(f)}</span>
+      <span class="sageata" aria-hidden="true"></span>
+    </button>
+    ${deschis ? `<div class="festival-detalii"><dl>${detalii.join('')}</dl></div>` : ''}
   </article>`;
+}
+
+function grupHtml(titlu, elemente){
+  if (!elemente.length) return '';
+  return `<section class="grup-luna">
+    <h2>${esc(titlu)}<span class="numar">${elemente.length}</span></h2>
+    ${elemente.map(randHtml).join('')}
+  </section>`;
 }
 
 function deseneazaLista(){
@@ -236,28 +250,41 @@ function deseneazaLista(){
   document.getElementById('nr-festivaluri').textContent = lista.length;
 
   if (!lista.length){
-    gazda.innerHTML = '<p class="gol">Niciun festival nu corespunde filtrelor alese.</p>';
+    gazda.innerHTML = '<p class="gol">Niciun festival nu corespunde filtrelor alese. ' +
+                      'Reactivează o categorie sau alege altă lună.</p>';
     return;
   }
 
-  const cuData = lista.filter(f => !f.recurent && f.perioada)
-                      .sort((a,b) => a.perioada.inceput - b.perioada.inceput);
   const recurente = lista.filter(f => f.recurent);
   const faraData  = lista.filter(f => !f.recurent && !f.perioada);
+  const cuData    = lista.filter(f => !f.recurent && f.perioada)
+                         .sort((a,b) => a.perioada.inceput - b.perioada.inceput);
 
-  const sectiune = (titlu, elemente) => elemente.length
-    ? `<h2 class="titlu-sectiune">${titlu}<span class="numar">${elemente.length}</span></h2>
-       <div class="grila">${elemente.map(cardHtml).join('')}</div>`
-    : '';
+  let html = '';
 
-  let html = cuData.length ? `<div class="grila">${cuData.map(cardHtml).join('')}</div>` : '';
   if (stare.lunaAleasa === 'recurent'){
-    html = `<div class="grila">${recurente.map(cardHtml).join('')}</div>`;
+    html = grupHtml('Evenimente recurente', recurente);
+  } else if (stare.lunaAleasa !== null){
+    html = grupHtml(LUNI[stare.lunaAleasa], cuData);
+    html += grupHtml('Evenimente recurente', recurente);
   } else {
-    html += sectiune('Evenimente recurente', recurente);
-    html += sectiune('Perioadă neprecizată', faraData);
+    // grupăm pe luna de început, ca lista lungă să rămână parcurgibilă
+    for (let l = 0; l < 12; l++){
+      html += grupHtml(LUNI[l], cuData.filter(f => f.perioada.inceput.getMonth() === l));
+    }
+    html += grupHtml('Evenimente recurente', recurente);
+    html += grupHtml('Perioadă neprecizată', faraData);
   }
+
   gazda.innerHTML = html;
+
+  gazda.querySelectorAll('.festival-cap').forEach(buton => {
+    buton.addEventListener('click', () => {
+      const id = buton.dataset.id;
+      stare.deschise.has(id) ? stare.deschise.delete(id) : stare.deschise.add(id);
+      deseneazaLista();
+    });
+  });
 }
 
 function deseneazaTot(){
@@ -293,12 +320,12 @@ async function porneste(){
   document.getElementById('moment').textContent =
     `${rezultat.sursa}, ${new Date().toLocaleTimeString('ro-RO', {hour:'2-digit', minute:'2-digit'})}`;
 
-  const neprecizate = stare.toate.filter(f => !f.perioada).length;
+  const neprecizate = stare.toate.filter(f => !f.recurent && !f.perioada).length;
   if (!stare.toate.length){
     mesaj('Nu s-a încărcat niciun festival. Verifică linkurile din <code>FESTIVALURI.surse</code>.', true);
   } else if (neprecizate){
-    mesaj(`${neprecizate} festivaluri au perioada necompletată sau neînțeleasă. ` +
-          'Apar la finalul listei, în secțiunea „Perioadă neprecizată”.');
+    mesaj(`${neprecizate} festivaluri au perioada necompletată. ` +
+          'Apar la finalul listei, sub „Perioadă neprecizată”.');
     setTimeout(() => mesaj(''), 9000);
   } else {
     mesaj('');
