@@ -345,6 +345,7 @@ function deseneazaFiltre(){
 
     const bloc = document.createElement('div');
     bloc.className = 'categorie';
+    bloc.dataset.categorie = fara(categorie);
 
     const cap = document.createElement('label');
     cap.className = 'cap-categorie';
@@ -396,6 +397,8 @@ function deseneazaFiltre(){
     bloc.appendChild(lista);
     gazda.appendChild(bloc);
   });
+
+  poligoaneIncarcate.forEach(p => adaugaComutatorPoligon(p.strat, p.layer, p.numar));
 }
 
 function aplicaFiltre(incadreaza){
@@ -436,45 +439,79 @@ document.getElementById('reincarca').addEventListener('click', porneste);
 
 /* ---------- contururi tematice ---------- */
 
+const poligoaneIncarcate = [];
+
+// Numele sub care poate veni denumirea entității din diverse surse
+const CAMPURI_NUME = ['nume','denumire','name','SITENAME','SITE_NAME','NUME','DENUMIRE','Name'];
+
+function numeEntitate(proprietati, implicit){
+  if (!proprietati) return implicit;
+  for (const c of CAMPURI_NUME){
+    if (proprietati[c]) return proprietati[c];
+  }
+  return implicit;
+}
+
 async function incarcaPoligoane(){
   for (const strat of CONFIG.poligoane){
     try {
       const raspuns = await fetch(strat.fisier);
       if (!raspuns.ok) continue;
       const geojson = await raspuns.json();
+
       const layer = L.geoJSON(geojson, {
-        style: { color:strat.culoare, weight:1.2, fillColor:strat.culoare, fillOpacity:.12 },
+        style: { color:strat.culoare, weight:1.3, fillColor:strat.culoare, fillOpacity:.14 },
         onEachFeature: (f, l) => {
-          const p = f.properties || {};
-          const nume = p.nume || p.name || p.SITENAME || strat.eticheta;
+          const nume = numeEntitate(f.properties, strat.eticheta);
           l.bindPopup(`<div class="pop" style="--c:${strat.culoare}">
             <div class="pop-eticheta"><i></i>${esc(strat.eticheta)}</div>
             <h3>${esc(nume)}</h3></div>`);
+          l.on('mouseover', () => l.setStyle({ fillOpacity:.28 }));
+          l.on('mouseout',  () => l.setStyle({ fillOpacity:.14 }));
         }
       }).addTo(harta);
-      adaugaComutatorPoligon(strat, layer);
-    } catch (err){ /* fișier absent */ }
+
+      const numar = (geojson.features || []).length || null;
+      poligoaneIncarcate.push({ strat, layer, numar });
+      adaugaComutatorPoligon(strat, layer, numar);
+    } catch (err){ /* fișier absent sau JSON invalid */ }
   }
 }
 
-function adaugaComutatorPoligon(strat, layer){
-  let bloc = document.getElementById('bloc-contururi');
-  if (!bloc){
-    bloc = document.createElement('div');
-    bloc.id = 'bloc-contururi';
-    bloc.className = 'categorie';
-    bloc.innerHTML = `<div class="cap-categorie" style="cursor:default">
-        <span class="nume-categorie">Contururi</span></div>
-      <div class="subcategorii"></div>`;
-    document.getElementById('filtre').appendChild(bloc);
+function adaugaComutatorPoligon(strat, layer, numar){
+  const gazda = document.getElementById('filtre');
+
+  // căutăm categoria în care ar trebui să stea; dacă lipsește, facem un bloc propriu
+  let lista = null;
+  if (strat.categorie){
+    const bloc = gazda.querySelector(`.categorie[data-categorie="${fara(strat.categorie)}"]`);
+    if (bloc) lista = bloc.querySelector('.subcategorii');
   }
+  if (!lista){
+    let bloc = document.getElementById('bloc-suprafete');
+    if (!bloc){
+      bloc = document.createElement('div');
+      bloc.id = 'bloc-suprafete';
+      bloc.className = 'categorie';
+      bloc.innerHTML = `<div class="cap-categorie" style="cursor:default">
+          <span class="nume-categorie">Suprafețe</span></div>
+        <div class="subcategorii"></div>`;
+      gazda.appendChild(bloc);
+    }
+    lista = bloc.querySelector('.subcategorii');
+  }
+
+  const pornit = harta.hasLayer(layer);
   const rand = document.createElement('label');
   rand.className = 'subcategorie';
-  rand.innerHTML = `<input type="checkbox" checked><span>${esc(strat.eticheta)}</span>`;
+  rand.innerHTML =
+    `<input type="checkbox" ${pornit ? 'checked' : ''}>
+     <span>${esc(strat.eticheta)}</span>
+     <span class="numar">${numar || ''}</span>`;
   rand.querySelector('input').addEventListener('change', e => {
     e.target.checked ? layer.addTo(harta) : harta.removeLayer(layer);
   });
-  bloc.querySelector('.subcategorii').appendChild(rand);
+  lista.appendChild(rand);
 }
 
 /* ---------- pornire ---------- */

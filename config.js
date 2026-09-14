@@ -46,11 +46,18 @@ const CONFIG = {
   // Cheie CARTO, opțională. Fără ea, fundalurile CARTO nu apar în listă.
   cheieCarto: '',
 
-  // Contururi opționale. Fișierele absente sunt ignorate în liniște.
+  // Straturi de suprafețe. Fișierele absente sunt ignorate în liniște, deci
+  // poți lăsa aici intrări pentru care încă nu ai datele.
+  // `categorie` spune sub ce categorie apare comutatorul în panoul lateral.
   poligoane: [
-    { eticheta: 'Situri SCI',            fisier: 'date/sci.geojson',   culoare: '#5F7F55' },
-    { eticheta: 'Situri SPA',            fisier: 'date/spa.geojson',   culoare: '#4A7186' },
-    { eticheta: 'Arii de interes local', fisier: 'date/local.geojson', culoare: '#8A7A3E' }
+    { eticheta: 'Rezervații naturale',   fisier: 'date/rezervatii.geojson',
+      culoare: '#2C6E49', categorie: 'patrimoniu natural' },
+    { eticheta: 'Situri SCI',            fisier: 'date/sci.geojson',
+      culoare: '#3E8C63', categorie: 'patrimoniu natural' },
+    { eticheta: 'Situri SPA',            fisier: 'date/spa.geojson',
+      culoare: '#1D6F7A', categorie: 'patrimoniu natural' },
+    { eticheta: 'Arii de interes local', fisier: 'date/arii-locale.geojson',
+      culoare: '#6E8C2C', categorie: 'patrimoniu natural' }
   ]
 };
 
