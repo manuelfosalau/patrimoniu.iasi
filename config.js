@@ -211,13 +211,23 @@ function esc(text){
 
 const cmp = new Intl.Collator('ro').compare;
 
+// Potrivire tolerantă: mai întâi exact, apoi pe conținut, ca să prindă și
+// scrieri de felul „Tezaur uman viu (meșteșuguri)” sau „Patrimoniu Natural ”.
+function gasesteCategorie(cheie){
+  const t = fara(cheie);
+  if (!t) return null;
+  return CATEGORII.find(c => fara(c.cheie) === t)
+      || CATEGORII.find(c => t.includes(fara(c.cheie)))
+      || null;
+}
+
 function culoareCategorie(cheie){
-  const gasit = CATEGORII.find(c => fara(c.cheie) === fara(cheie));
+  const gasit = gasesteCategorie(cheie);
   return gasit ? gasit.culoare : culoareStabila(cheie, CULORI_REZERVA);
 }
 
 function etichetaCategorie(cheie){
-  const gasit = CATEGORII.find(c => fara(c.cheie) === fara(cheie));
+  const gasit = gasesteCategorie(cheie);
   return gasit ? gasit.eticheta : (cheie || 'Neîncadrate');
 }
 
