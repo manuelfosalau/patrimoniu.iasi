@@ -255,8 +255,21 @@ function creeazaMarcator(lista){
 
   marcator.bindPopup(() => creeazaContinut(lista, marcator),
                      { maxWidth:300, minWidth:286, autoPanPadding:[30,30] });
+
+  // denumirea apare lângă punct de la un anumit nivel de zoom în sus;
+  // sub prag o ascunde foaia de stil, ca să nu reconstruim marcatorii
+  marcator.bindTooltip(titlu, {
+    permanent:true, direction:'right', offset:[11,0],
+    className:'eticheta-punct', opacity:1
+  });
   return marcator;
 }
+
+function comutaEtichete(){
+  const prag = CONFIG.zoomEtichete || 12;
+  harta.getContainer().classList.toggle('fara-etichete', harta.getZoom() < prag);
+}
+harta.on('zoomend', comutaEtichete);
 
 /* ---------- conturul UAT-ului separat ---------- */
 
@@ -311,7 +324,9 @@ function intraInUAT(){
   if (stare._etichetaUAT) stratUAT.removeLayer(stare._etichetaUAT);
   if (stare._stratUAT) stare._stratUAT.setStyle({ fillOpacity:.04, dashArray:'2 3' });
   aplicaFiltre();
-  harta.flyToBounds(stare.limiteUAT, { padding:[40,40], duration:.7 });
+  const potrivit = harta.getBoundsZoom(stare.limiteUAT, false, L.point(30,30));
+  const tinta = Math.min(potrivit + (CONFIG.zoomInUAT || 0), harta.getMaxZoom() || 18);
+  harta.flyTo(stare.limiteUAT.getCenter(), tinta, { duration:.7 });
 }
 
 function iesiDinUAT(){
@@ -326,6 +341,23 @@ function iesiDinUAT(){
 document.getElementById('inapoi-judet').addEventListener('click', iesiDinUAT);
 
 /* ---------- filtre ---------- */
+
+// Cât e adevărat, bifele individuale nu redesenează harta: o face bifa de
+// categorie, o singură dată, după ce le-a comutat pe toate.
+let suspendat = false;
+
+// Recalculează starea bifelor de categorie din bifele aflate sub ele
+function sincronizeazaCapuri(){
+  document.querySelectorAll('#filtre .categorie').forEach(bloc => {
+    const cap = bloc.querySelector('input[data-cap]');
+    if (!cap) return;
+    const copii = [...bloc.querySelectorAll('.subcategorii input[type=checkbox]')];
+    if (!copii.length) return;
+    const bifate = copii.filter(b => b.checked).length;
+    cap.checked = bifate === copii.length;
+    cap.indeterminate = bifate > 0 && bifate < copii.length;
+  });
+}
 
 function deseneazaFiltre(){
   const gazda = document.getElementById('filtre');
@@ -371,24 +403,28 @@ function deseneazaFiltre(){
       bifa.dataset.cheie = cheie;
       bifa.addEventListener('change', () => {
         bifa.checked ? stare.active.add(cheie) : stare.active.delete(cheie);
-        actualizeazaCap();
-        aplicaFiltre();
+        sincronizeazaCapuri();
+        if (!suspendat) aplicaFiltre();
       });
       bifeSub.push(bifa);
       lista.appendChild(rand);
     });
 
     const bifaCap = cap.querySelector('input');
-    function actualizeazaCap(){
-      const bifate = bifeSub.filter(b => b.checked).length;
-      bifaCap.checked = bifate === bifeSub.length;
-      bifaCap.indeterminate = bifate > 0 && bifate < bifeSub.length;
-    }
+    bifaCap.dataset.cap = '1';
+
+    // Bifa de categorie comandă tot ce se află sub ea, inclusiv straturile de
+    // suprafețe adăugate ulterior. De aceea citim copiii la momentul apăsării,
+    // nu la desenare, și le declanșăm propriile funcții prin evenimentul change.
     bifaCap.addEventListener('change', () => {
-      bifeSub.forEach(b => {
-        b.checked = bifaCap.checked;
-        b.checked ? stare.active.add(b.dataset.cheie) : stare.active.delete(b.dataset.cheie);
+      suspendat = true;
+      lista.querySelectorAll('input[type=checkbox]').forEach(b => {
+        if (b.checked !== bifaCap.checked){
+          b.checked = bifaCap.checked;
+          b.dispatchEvent(new Event('change'));
+        }
       });
+      suspendat = false;
       bifaCap.indeterminate = false;
       aplicaFiltre();
     });
@@ -398,6 +434,7 @@ function deseneazaFiltre(){
   });
 
   poligoaneIncarcate.forEach(p => adaugaComutatorPoligon(p.strat, p.layer, p.numar));
+  sincronizeazaCapuri();
 }
 
 function aplicaFiltre(incadreaza){
@@ -423,6 +460,7 @@ function aplicaFiltre(incadreaza){
   });
 
   document.getElementById('nr-vizibile').textContent = vizibile;
+  comutaEtichete();
 
   if (incadreaza && limite.length){
     stare.limiteJudet = L.latLngBounds(limite);
@@ -441,7 +479,9 @@ document.getElementById('reincarca').addEventListener('click', porneste);
 const poligoaneIncarcate = [];
 
 // Numele sub care poate veni denumirea entității din diverse surse
-const CAMPURI_NUME = ['nume','denumire','name','SITENAME','SITE_NAME','NUME','DENUMIRE','Name'];
+const CAMPURI_NUME = ['nume','denumire','name','SITENAME','SITE_NAME','NUME','DENUMIRE',
+                      'Name','NAME','Denumire','Nume','nume_arie','DEN_ARIE','den_arie',
+                      'NUMEUAT','nume_uat','TITLE','titlu'];
 
 function numeEntitate(proprietati, implicit){
   if (!proprietati) return implicit;
@@ -464,15 +504,18 @@ async function incarcaPoligoane(){
           const nume = numeEntitate(f.properties, strat.eticheta);
           l.bindPopup(`<div class="pop" style="--c:${strat.culoare}">
             <div class="pop-eticheta"><i></i>${esc(strat.eticheta)}</div>
-            <h3>${esc(nume)}</h3></div>`);
-          l.on('mouseover', () => l.setStyle({ fillOpacity:.28 }));
-          l.on('mouseout',  () => l.setStyle({ fillOpacity:.14 }));
-        }
+            <h3>${esc(nume)}</h3></div>`, { maxWidth:300, minWidth:240 });
+          l.bindTooltip(nume, { sticky:true, className:'eticheta-suprafata' });
+          l.on('mouseover', () => l.setStyle({ fillOpacity:.3, weight:2 }));
+          l.on('mouseout',  () => l.setStyle({ fillOpacity:.14, weight:1.3 }));
+        },
+        bubblingMouseEvents: false
       }).addTo(harta);
 
       const numar = (geojson.features || []).length || null;
       poligoaneIncarcate.push({ strat, layer, numar });
       adaugaComutatorPoligon(strat, layer, numar);
+      sincronizeazaCapuri();
     } catch (err){ /* fișier absent sau JSON invalid */ }
   }
 }
@@ -509,6 +552,7 @@ function adaugaComutatorPoligon(strat, layer, numar){
      <span class="numar">${numar || ''}</span>`;
   rand.querySelector('input').addEventListener('change', e => {
     e.target.checked ? layer.addTo(harta) : harta.removeLayer(layer);
+    sincronizeazaCapuri();
   });
   lista.appendChild(rand);
 }

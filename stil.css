@@ -146,6 +146,21 @@ input[type=checkbox]{accent-color:var(--cerneala);width:13px;height:13px;cursor:
 #inapoi-judet:hover{border-color:var(--cerneala-3)}
 #inapoi-judet[hidden]{display:none}
 
+/* etichetele de lângă puncte, vizibile doar de la un zoom în sus */
+.leaflet-tooltip.eticheta-punct{
+  background:none;border:0;box-shadow:none;padding:0;margin:0;
+  font:500 12.5px/1 var(--serif);color:#222A26;white-space:nowrap;
+  text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 2px #fff,1px 1px 0 #fff,-1px -1px 0 #fff;
+}
+.leaflet-tooltip.eticheta-punct::before{display:none}
+.leaflet-container.fara-etichete .eticheta-punct{display:none}
+
+.leaflet-tooltip.eticheta-suprafata{
+  background:var(--panou);border:1px solid var(--linie-tare);box-shadow:none;
+  font:400 12.5px var(--sans);color:var(--cerneala);padding:4px 9px;border-radius:2px;
+}
+.leaflet-tooltip.eticheta-suprafata::before{display:none}
+
 /* ---------- popup ---------- */
 .leaflet-popup-content-wrapper{border-radius:2px;box-shadow:0 6px 24px rgba(20,28,24,.2)}
 .leaflet-popup-content{margin:0;width:286px!important;font-family:var(--sans)}

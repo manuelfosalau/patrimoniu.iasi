@@ -40,6 +40,13 @@ const CONFIG = {
   centru: [47.22, 27.15],
   zoom: 9,
 
+  // Cât de mult se apropie harta când intri în municipiu, peste încadrarea
+  // strictă a conturului. 0 înseamnă exact conturul, 1 e un nivel mai aproape.
+  zoomInUAT: 1.5,
+
+  // De la ce nivel de zoom apar denumirile lângă puncte
+  zoomEtichete: 12,
+
   // Anul folosit când coloana perioada conține doar zi și lună
   anEvenimente: 2026,
 
@@ -83,10 +90,23 @@ const COL = {
 const CATEGORII = [
   { cheie:'patrimoniu natural',   eticheta:'Patrimoniu natural',   culoare:'#2F9E4F' },
   { cheie:'patrimoniu material',  eticheta:'Patrimoniu material',  culoare:'#8A1C32' },
+  { cheie:'tezaur uman viu',      eticheta:'Tezaur uman viu',      culoare:'#C9A227' },
+  { cheie:'gastronomie',          eticheta:'Gastronomie',          culoare:'#0F8C8C' },
   { cheie:'patrimoniu imaterial', eticheta:'Patrimoniu imaterial', culoare:'#B08344' },
   { cheie:'evenimente',           eticheta:'Evenimente',           culoare:'#1F6FB2' }
 ];
-const CULOARE_IMPLICITA = '#0F8C8C';
+
+// Categoriile care nu apar mai sus primesc o culoare stabilă din această listă,
+// ca să nu ajungă două categorii noi cu aceeași nuanță.
+const CULORI_REZERVA = ['#7A4FA3','#A0522D','#4C5FAF','#B03A7E','#6E8C2C','#C2571A'];
+const CULOARE_IMPLICITA = CULORI_REZERVA[0];
+
+function culoareStabila(text, paleta){
+  let suma = 0;
+  const t = fara(text);
+  for (let i = 0; i < t.length; i++) suma = (suma * 31 + t.charCodeAt(i)) % 100000;
+  return paleta[suma % paleta.length];
+}
 
 /* ==========================================================================
    FESTIVALURI
@@ -139,10 +159,8 @@ function potrivesteCategorie(text){
   if (gasit) return gasit;
 
   // categorie necunoscută: îi dăm o culoare stabilă, derivată din denumire
-  let suma = 0;
-  for (let i = 0; i < t.length; i++) suma = (suma * 31 + t.charCodeAt(i)) % 100000;
-  const paleta = FESTIVALURI.rezerva;
-  return { eticheta: text.toString().trim(), culoare: paleta[suma % paleta.length] };
+  return { eticheta: text.toString().trim(),
+           culoare: culoareStabila(t, FESTIVALURI.rezerva) };
 }
 
 // Aceeași culoare, foarte diluată, pentru fundalul unui card
@@ -195,7 +213,7 @@ const cmp = new Intl.Collator('ro').compare;
 
 function culoareCategorie(cheie){
   const gasit = CATEGORII.find(c => fara(c.cheie) === fara(cheie));
-  return gasit ? gasit.culoare : CULOARE_IMPLICITA;
+  return gasit ? gasit.culoare : culoareStabila(cheie, CULORI_REZERVA);
 }
 
 function etichetaCategorie(cheie){
