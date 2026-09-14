@@ -81,12 +81,12 @@ const COL = {
 
 // Categoriile și culorile lor. Ordinea de aici e ordinea din interfață.
 const CATEGORII = [
-  { cheie:'patrimoniu natural',   eticheta:'Patrimoniu natural',   culoare:'#2C6E49' },
-  { cheie:'patrimoniu material',  eticheta:'Patrimoniu material',  culoare:'#9E2B25' },
-  { cheie:'patrimoniu imaterial', eticheta:'Patrimoniu imaterial', culoare:'#6B3FA0' },
-  { cheie:'evenimente',           eticheta:'Evenimente',           culoare:'#A8730A' }
+  { cheie:'patrimoniu natural',   eticheta:'Patrimoniu natural',   culoare:'#2F9E4F' },
+  { cheie:'patrimoniu material',  eticheta:'Patrimoniu material',  culoare:'#8A1C32' },
+  { cheie:'patrimoniu imaterial', eticheta:'Patrimoniu imaterial', culoare:'#B08344' },
+  { cheie:'evenimente',           eticheta:'Evenimente',           culoare:'#1F6FB2' }
 ];
-const CULOARE_IMPLICITA = '#5C665F';
+const CULOARE_IMPLICITA = '#0F8C8C';
 
 /* ==========================================================================
    FESTIVALURI
@@ -115,19 +115,39 @@ const FESTIVALURI = {
 
   // Cuvintele-cheie sunt folosite ca să recunoască scrierea din tabel
   // chiar dacă diferă diacriticele, „și” față de „&”, sau ordinea.
+  // Ordinea contează: se folosește prima potrivire. „Folclor și tradiție”
+  // stă înaintea categoriei de gastronomie, ca să nu se încurce pe „tradiți”.
   categorii: [
-    { eticheta:'Cultură & industrii creative',             culoare:'#9E2B25', chei:['cultura','creativ'] },
-    { eticheta:'Muzică & entertainment',                   culoare:'#6B3FA0', chei:['muzica','entertainment'] },
-    { eticheta:'Tradiții & spiritualitate și gastronomie', culoare:'#A8730A', chei:['traditii','spiritualitate','gastronomie'] },
-    { eticheta:'MICE, business & knowledge',               culoare:'#1D6F7A', chei:['mice','business','knowledge'] }
-  ]
+    { eticheta:'Cultură & industrii creative',             culoare:'#C62828', chei:['cultura','creativ'] },
+    { eticheta:'MICE, business & knowledge',               culoare:'#E2681C', chei:['mice','business','knowledge'] },
+    { eticheta:'Muzică & entertainment',                   culoare:'#2F9E4F', chei:['muzica','entertainment'] },
+    { eticheta:'Folclor și tradiție',                      culoare:'#1F6FB2', chei:['folclor'] },
+    { eticheta:'Microfestivaluri comunitare',              culoare:'#7A4FA3', chei:['microfestival','comunitar'] },
+    { eticheta:'Tradiții & spiritualitate și gastronomie', culoare:'#D9A400', chei:['spiritualitate','gastronomie','traditi'] }
+  ],
+
+  // Categoriile nerecunoscute primesc o culoare din această listă, în loc de gri.
+  // Aceeași denumire primește mereu aceeași culoare.
+  rezerva: ['#0F8C8C','#A0522D','#4C5FAF','#B03A7E','#6E8C2C','#8A6BBF']
 };
 
 function potrivesteCategorie(text){
   const t = fara(text);
   if (!t) return { eticheta:'Neîncadrate', culoare:CULOARE_IMPLICITA };
+
   const gasit = FESTIVALURI.categorii.find(c => c.chei.some(k => t.includes(k)));
-  return gasit || { eticheta: text.toString().trim(), culoare: CULOARE_IMPLICITA };
+  if (gasit) return gasit;
+
+  // categorie necunoscută: îi dăm o culoare stabilă, derivată din denumire
+  let suma = 0;
+  for (let i = 0; i < t.length; i++) suma = (suma * 31 + t.charCodeAt(i)) % 100000;
+  const paleta = FESTIVALURI.rezerva;
+  return { eticheta: text.toString().trim(), culoare: paleta[suma % paleta.length] };
+}
+
+// Aceeași culoare, foarte diluată, pentru fundalul unui card
+function tenta(hex, alfa){
+  return /^#[0-9a-f]{6}$/i.test(hex) ? hex + (alfa || '14') : 'transparent';
 }
 
 // Evenimente fără dată fixă, a căror coloană de perioadă exprimă o frecvență.

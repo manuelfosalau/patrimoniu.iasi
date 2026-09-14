@@ -351,8 +351,7 @@ function deseneazaFiltre(){
     cap.className = 'cap-categorie';
     cap.innerHTML =
       `<input type="checkbox" checked>
-       <span class="pastila" style="background:${culoareCategorie(categorie)}"></span>
-       <span class="nume-categorie">${esc(etichetaCategorie(categorie))}</span>
+       <span class="nume-categorie" style="color:${culoareCategorie(categorie)}">${esc(etichetaCategorie(categorie))}</span>
        <span class="numar">${total}</span>`;
     bloc.appendChild(cap);
 

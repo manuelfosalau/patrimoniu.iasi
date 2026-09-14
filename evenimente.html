@@ -127,8 +127,7 @@ function deseneazaCategorii(){
     rand.className = 'subcategorie';
     rand.innerHTML =
       `<input type="checkbox" ${stare.categorii.has(cat) ? 'checked' : ''}>
-       <span class="pastila" style="background:${culori.get(cat)}"></span>
-       <span>${esc(cat)}</span>
+       <span style="color:${culori.get(cat)};font-weight:500">${esc(cat)}</span>
        <span class="numar">${numar.get(cat)}</span>`;
     rand.querySelector('input').addEventListener('change', e => {
       e.target.checked ? stare.categorii.add(cat) : stare.categorii.delete(cat);
@@ -225,9 +224,9 @@ function randHtml(f){
   detalii.push(`<dt>Zona</dt><dd>${esc(f.zona)}</dd>`);
   if (f.link) detalii.push(`<dt>Link</dt><dd><a href="${esc(f.link)}" target="_blank" rel="noopener">pagina evenimentului</a></dd>`);
 
-  return `<article class="festival${deschis ? ' deschis' : ''}" style="--c:${f.culoare}">
+  return `<article class="festival${deschis ? ' deschis' : ''}"
+           style="--c:${f.culoare};--c-fond:${tenta(f.culoare)}">
     <button class="festival-cap" type="button" data-id="${esc(id)}" aria-expanded="${deschis}">
-      <span class="pastila"></span>
       <span class="titlu">${esc(f.denumire)}</span>
       <span class="cand">${cand(f)}</span>
       <span class="sageata" aria-hidden="true"></span>

@@ -79,7 +79,7 @@ select:hover,.buton:hover{border-color:var(--cerneala-3);color:var(--cerneala)}
 #filtre{flex:1;overflow-y:auto;padding:4px 24px 24px;min-height:0}
 
 .categorie{margin-top:18px}
-.cap-categorie{display:flex;align-items:baseline;gap:9px;cursor:pointer;user-select:none;padding:3px 0}
+.cap-categorie{display:flex;align-items:baseline;gap:10px;cursor:pointer;user-select:none;padding:3px 0}
 .pastila{width:9px;height:9px;border-radius:50%;flex:none;align-self:center}
 .nume-categorie{
   font-family:var(--serif);font-size:15px;font-weight:600;flex:1;line-height:1.3;
@@ -198,17 +198,18 @@ input[type=checkbox]{accent-color:var(--cerneala);width:13px;height:13px;cursor:
 #continut{display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--hartie)}
 
 #luni{
-  display:flex;flex-wrap:wrap;gap:3px;padding:16px 26px;flex:none;
+  display:flex;flex-wrap:wrap;gap:4px;padding:18px 26px;flex:none;
   border-bottom:1px solid var(--linie);background:var(--panou);
 }
 .luna{
-  padding:6px 12px;border:0;background:none;color:var(--cerneala-3);
-  font:400 13px var(--sans);cursor:pointer;border-radius:2px;
+  padding:8px 15px;border:0;background:none;color:var(--cerneala-2);
+  font:500 16px/1.2 var(--serif);cursor:pointer;border-radius:2px;
 }
 .luna:hover:not(:disabled){background:var(--hartie);color:var(--cerneala)}
-.luna[aria-pressed="true"]{background:var(--selectie);color:#fff;font-weight:500}
-.luna:disabled{opacity:.3;cursor:default}
-.luna .cnt{font-size:11px;opacity:.62;margin-left:5px;font-variant-numeric:tabular-nums}
+.luna[aria-pressed="true"]{background:var(--selectie);color:#fff}
+.luna:disabled{opacity:.28;cursor:default}
+.luna .cnt{font:400 11.5px var(--sans);opacity:.6;margin-left:6px;
+           font-variant-numeric:tabular-nums;vertical-align:2px}
 .luna.recurenta{margin-left:auto}
 
 .comutator{flex:1;text-align:center}
@@ -219,14 +220,15 @@ input[type=checkbox]{accent-color:var(--cerneala);width:13px;height:13px;cursor:
 .grup-luna{margin-top:26px}
 .grup-luna:first-child{margin-top:14px}
 .grup-luna > h2{
-  font-size:15px;font-weight:500;color:var(--cerneala-3);font-style:italic;
-  padding-bottom:7px;border-bottom:1px solid var(--linie);margin-bottom:4px;
+  font-size:21px;font-weight:600;color:var(--cerneala);
+  padding-bottom:8px;border-bottom:1px solid var(--linie-tare);margin-bottom:6px;
   display:flex;justify-content:space-between;align-items:baseline;
 }
-.grup-luna > h2 .numar{font-style:normal}
+.grup-luna > h2 .numar{font:400 12px var(--sans);color:var(--cerneala-3)}
 
 .festival{
-  background:var(--panou);border:1px solid transparent;border-bottom:1px solid var(--linie);
+  background:var(--c-fond,var(--panou));
+  border:1px solid transparent;border-bottom:1px solid var(--linie);
   transition:transform .14s ease, box-shadow .14s ease, border-color .14s ease;
 }
 .festival:hover{
@@ -240,23 +242,22 @@ input[type=checkbox]{accent-color:var(--cerneala);width:13px;height:13px;cursor:
   width:100%;display:flex;align-items:center;gap:12px;text-align:left;
   padding:13px 16px;border:0;background:none;cursor:pointer;font:inherit;
 }
-.festival-cap .pastila{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
 .festival-cap .titlu{
-  flex:1;font-family:var(--serif);font-size:16px;font-weight:600;
-  color:var(--cerneala);line-height:1.3;
+  flex:1;font-family:var(--serif);font-size:17px;font-weight:600;
+  color:var(--c);line-height:1.3;
 }
 .festival-cap .cand{
-  font-size:12.5px;color:var(--cerneala-3);white-space:nowrap;
+  font-size:13px;color:var(--cerneala-2);white-space:nowrap;
   font-variant-numeric:tabular-nums;
 }
 .festival-cap .sageata{
-  width:9px;height:9px;border-right:1.5px solid var(--cerneala-3);
-  border-bottom:1.5px solid var(--cerneala-3);transform:rotate(45deg) translate(-2px,-2px);
+  width:9px;height:9px;border-right:1.5px solid var(--c);
+  border-bottom:1.5px solid var(--c);opacity:.75;transform:rotate(45deg) translate(-2px,-2px);
   flex:none;transition:transform .16s ease;
 }
 .festival.deschis .sageata{transform:rotate(-135deg) translate(-2px,-2px)}
 
-.festival-detalii{padding:0 16px 15px 37px}
+.festival-detalii{padding:0 16px 15px}
 .festival-detalii dl{
   margin:0;font-size:13px;display:grid;grid-template-columns:auto 1fr;gap:5px 14px;
   padding-top:12px;border-top:1px solid var(--linie);
