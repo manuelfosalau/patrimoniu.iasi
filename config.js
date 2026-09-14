@@ -11,7 +11,7 @@ const CONFIG = {
 
   // Linkul CSV publicat din Google Sheets.
   // Fișier > Distribuie > Publică pe web > fila „date” > format .csv
-  urlCsvPublicat: '',
+  urlCsvPublicat: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQSKqUDCGNUYY3a-IqaDPlTs_tggzl-vpS8bvcAicVLaIwwoL2n9zDwkXCdQFhYmbtL_46ROHzKRKf_/pub?gid=0&single=true&output=csv',
 
   // Alternativ, dacă nu publici foaia: ID-ul foii, dintre /d/ și /edit
   idFoaie: '',
@@ -91,8 +91,8 @@ const CULOARE_IMPLICITA = '#5C665F';
 const FESTIVALURI = {
 
   surse: [
-    { eticheta: 'Oraș',  url: '' },
-    { eticheta: 'Județ', url: '' }
+    { eticheta: 'Oraș',  url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR2m0ob7kRyIJ5fmf5hqKHYnie_Yd9Pn1NE9gGKitelBxfQQVxA74ndZ31_q0ulpVn16dbsxdZtWr7N/pub?gid=322332200&single=true&output=csv' },
+    { eticheta: 'Județ', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR2m0ob7kRyIJ5fmf5hqKHYnie_Yd9Pn1NE9gGKitelBxfQQVxA74ndZ31_q0ulpVn16dbsxdZtWr7N/pub?gid=0&single=true&output=csv' }
   ],
 
   // Numele coloanelor din acel tabel. Schimbă doar partea din dreapta.
