@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Calendarul evenimentelor, versiune de test</title>
+<meta name="description" content="Versiune de test a calendarului evenimentelor din municipiul și județul Iași, cu evenimentele reprezentate proporțional cu numărul de participanți.">
+<!-- pagină de test: nu o lăsăm indexată până nu devine versiunea oficială -->
+<meta name="robots" content="noindex">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#F2F3F0">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Spectral:ital,wght@0,500;0,600;1,500&display=swap">
+<link rel="stylesheet" href="stil.css?v=7">
+
+<style>
+/* Stilurile acestei pagini stau aici, ca pagina de test să nu atingă stil.css.
+   Dacă versiunea devine oficială, blocul se poate muta în stil.css. */
+
+#sezoane{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;flex:none;
+  background:var(--panou);border-bottom:1px solid var(--linie);
+}
+.sezon{
+  border:0;border-right:1px solid var(--linie);background:none;cursor:pointer;
+  padding:16px 18px 14px;text-align:left;font:inherit;color:var(--cerneala-2);
+  border-bottom:3px solid transparent;
+}
+.sezon:last-child{border-right:0}
+.sezon:hover{background:var(--hartie);color:var(--cerneala)}
+.sezon[aria-pressed="true"]{color:var(--cerneala);border-bottom-color:var(--cerneala);background:var(--hartie)}
+.sezon b{display:block;font:600 19px/1.2 var(--serif)}
+.sezon span{display:block;font-size:12px;color:var(--cerneala-3);margin-top:3px}
+.sezon .cnt{font-variant-numeric:tabular-nums}
+
+#randuri{flex:1;overflow-y:auto;padding:4px 28px 40px;min-height:0}
+
+.rand-luna{
+  display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:center;
+  padding:20px 0;border-bottom:1px solid var(--linie);min-height:86px;
+}
+.rand-luna h2{font-size:23px;line-height:1.1}
+.rand-luna h2 small{display:block;font:400 12px var(--sans);color:var(--cerneala-3);margin-top:5px}
+.rand-luna.nedatat h2{font-size:17px;font-style:italic;color:var(--cerneala-2)}
+
+.cercuri{display:flex;flex-wrap:wrap;align-items:center;gap:9px 10px}
+.cercuri .gol-luna{font-size:13px;color:var(--cerneala-3);font-style:italic}
+
+.cerc{
+  flex:none;border-radius:50%;padding:0;cursor:pointer;
+  background:var(--c);border:1.5px solid rgba(20,28,24,.28);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.cerc:hover,.cerc:focus-visible{transform:scale(1.14);box-shadow:0 3px 10px rgba(20,28,24,.25);z-index:2}
+.cerc.ales{outline:2px solid var(--cerneala);outline-offset:2px}
+.cerc.m1{width:16px;height:16px}
+.cerc.m2{width:26px;height:26px}
+.cerc.m3{width:40px;height:40px}
+.cerc.m4{width:58px;height:58px}
+.cerc.m0{width:16px;height:16px;background:transparent;border:2px dashed var(--c)}
+
+/* legenda mărimilor */
+.legenda{padding:18px 24px 6px}
+.legenda h3{font-size:15px;margin-bottom:10px}
+.legenda-rand{display:flex;align-items:center;gap:12px;margin:6px 0;font-size:12.5px;color:var(--cerneala-2)}
+.legenda-rand i{
+  flex:none;display:block;border-radius:50%;background:#C9CEC6;border:1.5px solid rgba(20,28,24,.28);
+}
+.legenda-rand .slot{width:58px;display:flex;justify-content:center;flex:none}
+
+/* eticheta de la hover */
+#eticheta{
+  position:fixed;z-index:1200;pointer-events:none;background:var(--cerneala);color:#fff;
+  font:500 12.5px/1.3 var(--sans);padding:6px 10px;max-width:280px;
+  transform:translate(-50%,calc(-100% - 10px));white-space:normal;
+}
+#eticheta[hidden]{display:none}
+
+/* fișa de detalii */
+#fisa{
+  position:fixed;z-index:1300;width:340px;max-width:calc(100vw - 24px);
+  background:var(--panou);box-shadow:0 10px 36px rgba(20,28,24,.24);
+  border:1px solid var(--linie-tare);
+}
+#fisa[hidden]{display:none}
+#fisa .cap{padding:16px 44px 12px 18px;border-bottom:1px solid var(--linie);background:var(--c-fond)}
+#fisa .cap small{display:block;font-size:11.5px;color:var(--cerneala-2);margin-bottom:5px}
+#fisa .cap h3{font-size:19px;line-height:1.25;color:var(--c)}
+#fisa .corp{padding:12px 18px 16px;max-height:52vh;overflow-y:auto}
+#fisa dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px}
+#fisa dt{color:var(--cerneala-3)}
+#fisa dd{margin:0;color:var(--cerneala)}
+#fisa a{color:var(--focus);word-break:break-word}
+#fisa .inchide{
+  position:absolute;top:10px;right:10px;width:28px;height:28px;border:0;background:none;
+  font:400 22px/1 var(--sans);color:var(--cerneala-2);cursor:pointer;
+}
+#fisa .inchide:hover{color:var(--cerneala)}
+
+@media (max-width:860px){
+  #sezoane{grid-template-columns:repeat(2,1fr)}
+  .sezon:nth-child(2){border-right:0}
+  .rand-luna{grid-template-columns:1fr;gap:10px}
+  #randuri{padding:4px 16px 30px}
+  #fisa{left:12px!important;right:12px;bottom:12px;top:auto!important;width:auto}
+}
+</style>
+</head>
+<body>
+
+<a class="sari-la-continut" href="#randuri">Sari la calendar</a>
+
+<div id="aplicatie">
+  <aside id="bara">
+    <header id="antet">
+      <h1>Calendarul evenimentelor</h1>
+      <p>Versiune de test · municipiul și județul Iași</p>
+    </header>
+
+    <nav class="navigare" aria-label="Secțiuni">
+      <a href="index.html">Hartă</a>
+      <a href="evenimente.html">Calendar</a>
+      <a href="calendar-test.html" aria-current="page">Test</a>
+    </nav>
+
+    <div id="unelte">
+      <input id="cautare" type="search" placeholder="Caută după nume, localitate, organizator" autocomplete="off" aria-label="Caută un eveniment">
+      <div class="rand-unelte" id="surse" role="group" aria-label="Filtrare după sursă"></div>
+    </div>
+
+    <div id="filtre"></div>
+
+    <div class="legenda" aria-label="Legenda mărimilor">
+      <h3>Participanți (orientativ)</h3>
+      <div class="legenda-rand"><span class="slot"><i style="width:16px;height:16px"></i></span>sub 100</div>
+      <div class="legenda-rand"><span class="slot"><i style="width:26px;height:26px"></i></span>100 – 1.000</div>
+      <div class="legenda-rand"><span class="slot"><i style="width:40px;height:40px"></i></span>1.000 – 5.000</div>
+      <div class="legenda-rand"><span class="slot"><i style="width:58px;height:58px"></i></span>peste 5.000</div>
+      <div class="legenda-rand"><span class="slot"><i style="width:16px;height:16px;background:none;border:2px dashed #9AA39D"></i></span>necunoscut</div>
+    </div>
+
+    <div id="subsol">
+      <span><strong id="nr-evenimente">0</strong> evenimente în sezon</span>
+      <span id="moment"></span>
+    </div>
+  </aside>
+
+  <main id="continut">
+    <div id="sezoane" role="group" aria-label="Alege sezonul"></div>
+    <div id="randuri"></div>
+  </main>
+</div>
+
+<div id="eticheta" hidden></div>
+
+<div id="fisa" role="dialog" aria-modal="false" aria-labelledby="fisa-titlu" hidden>
+  <button class="inchide" type="button" aria-label="Închide">×</button>
+  <div class="cap"><small id="fisa-categorie"></small><h3 id="fisa-titlu"></h3></div>
+  <div class="corp"><dl id="fisa-detalii"></dl></div>
+</div>
+
+<div id="stare" role="status">Se încarcă datele…</div>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="config.js?v=7"></script>
+<script>
+
+/* ==========================================================================
+   CONFIGURARE A PAGINII DE TEST
+   Stă aici, nu în config.js, ca pagina să poată fi ștearsă fără urme.
+   ========================================================================== */
+
+const TEST = {
+  url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR2m0ob7kRyIJ5fmf5hqKHYnie_Yd9Pn1NE9gGKitelBxfQQVxA74ndZ31_q0ulpVn16dbsxdZtWr7N/pub?gid=262696074&single=true&output=csv',
+
+  // Coloanele se recunosc după cuvinte-cheie, nu după textul exact,
+  // deci „A. Categorie tematică” și „Categorie tematica” merg la fel.
+  coloane: {
+    sursa:        ['sursa'],
+    nume:         ['nume eveniment','nume'],
+    luna:         ['luna'],
+    sezon:        ['sezon'],
+    perioada:     ['perioada'],
+    localitate:   ['localitate'],
+    mediu:        ['mediu'],
+    categorie:    ['categorie tematica','categorie'],
+    anvergura:    ['anvergura'],
+    rol:          ['rol turistic'],
+    tip:          ['tip eveniment'],
+    participanti: ['participanti'],
+    organizator:  ['organizator'],
+    link:         ['link'],
+    activ:        ['activ']
+  },
+
+  // Pragurile de mărime pentru cercuri
+  praguri: [100, 1000, 5000],
+
+  sezoane: [
+    { cheie:'iarna',     eticheta:'Iarnă',     luni:[12,1,2] },
+    { cheie:'primavara', eticheta:'Primăvară', luni:[3,4,5] },
+    { cheie:'vara',      eticheta:'Vară',      luni:[6,7,8] },
+    { cheie:'toamna',    eticheta:'Toamnă',    luni:[9,10,11] }
+  ]
+};
+
+
+/* ==========================================================================
+   Citirea valorilor
+   ========================================================================== */
+
+function mesaj(text, esteEroare){
+  const cutie = document.getElementById('stare');
+  if (!text){ cutie.classList.add('ascuns'); return; }
+  cutie.classList.remove('ascuns');
+  cutie.classList.toggle('eroare', !!esteEroare);
+  cutie.innerHTML = text;
+}
+
+// Leagă fiecare câmp de antetul real din tabel
+function hartaColoane(antete){
+  const rezultat = {};
+  const folosite = new Set();
+  const norm = antete.map(a => ({ brut:a, n:fara(a) }));
+
+  for (const [camp, chei] of Object.entries(TEST.coloane)){
+    let gasit = null;
+    for (const cheie of chei){
+      gasit = norm.find(a => !folosite.has(a.brut) && a.n === cheie)
+           || norm.find(a => !folosite.has(a.brut) && a.n.includes(cheie));
+      if (gasit) break;
+    }
+    if (gasit){ rezultat[camp] = gasit.brut; folosite.add(gasit.brut); }
+  }
+  return rezultat;
+}
+
+// „1.000”, „~500”, „1000-5000”, „peste 5.000”, „1,5 mii”, „2k”
+function parseParticipanti(text){
+  if (!text) return null;
+  let t = fara(text).replace(/\s+/g, '');
+  if (!t) return null;
+  const mii = /mii|\dk/.test(t);
+  t = t.replace(/(\d)\.(?=\d{3}(?!\d))/g, '$1');         // separatorul de mii
+  const numere = (t.match(/\d+(?:[.,]\d+)?/g) || [])
+                   .map(n => parseFloat(n.replace(',', '.')) * (mii ? 1000 : 1));
+  if (!numere.length) return null;
+  if (/peste|>|minim|min\./.test(t)) return Math.max(...numere) + 1;
+  if (/sub|<|maxim|max\./.test(t))   return Math.max(...numere) - 1;
+  if (numere.length >= 2) return (numere[0] + numere[1]) / 2;
+  return numere[0];
+}
+
+function clasaMarime(n){
+  if (n === null || !isFinite(n)) return 0;
+  const [a, b, c] = TEST.praguri;
+  if (n < a) return 1;
+  if (n < b) return 2;
+  if (n <= c) return 3;
+  return 4;
+}
+
+// „1”, „01”, „1, 2”, „ianuarie”, „ian-feb”
+function parseLuni(text){
+  if (!text) return [];
+  const luni = new Set();
+  text.toString().split(/[,;\/\s]+|[-–—]/).forEach(bucata => {
+    const b = bucata.trim();
+    if (!b) return;
+    const n = parseInt(b, 10);
+    if (String(n) === b.replace(/^0+/, '') && n >= 1 && n <= 12){ luni.add(n); return; }
+    const i = indexLuna(b);
+    if (i >= 0) luni.add(i + 1);
+  });
+  return [...luni];
+}
+
+function parseSezon(text){
+  const t = fara(text);
+  if (!t) return null;
+  // „primavara” conține „vara”, deci o verificăm prima
+  if (t.includes('primavar')) return 'primavara';
+  if (t.includes('iarn'))     return 'iarna';
+  if (t.includes('toamn'))    return 'toamna';
+  if (t.includes('vara'))     return 'vara';
+  return null;
+}
+
+function inactiv(text){
+  return ['nu','0','inactiv','false','anulat'].includes(fara(text));
+}
+
+function linkComplet(url){
+  if (!url) return '';
+  return /^https?:\/\//i.test(url) ? url : 'https://' + url.replace(/^\/+/, '');
+}
+
+
+/* ==========================================================================
+   Starea paginii
+   ========================================================================== */
+
+const stare = {
+  toate: [],
+  sezon: null,
+  surse: new Set(),
+  categorii: new Set(),
+  cautare: '',
+  ales: null
+};
+
+async function incarca(){
+  const raspuns = await fetch(faraCache(TEST.url));
+  if (!raspuns.ok) throw new Error('HTTP ' + raspuns.status);
+  const text = await raspuns.text();
+
+  const parsat = Papa.parse(text.trim(), { header:true, skipEmptyLines:true });
+  const C = hartaColoane(parsat.meta.fields || []);
+  const v = (r, camp) => (C[camp] ? (r[C[camp]] || '').toString().trim() : '');
+
+  const evenimente = [];
+  parsat.data.forEach((r, i) => {
+    const nume = v(r, 'nume');
+    if (!nume) return;
+    if (inactiv(v(r, 'activ'))) return;
+
+    const cat = potrivesteCategorie(v(r, 'categorie'));
+    let luni = parseLuni(v(r, 'luna'));
+    if (!luni.length){
+      const p = parsePerioada(v(r, 'perioada'));
+      if (p) luni = [p.inceput.getMonth() + 1];
+    }
+    const p = parsePerioada(v(r, 'perioada'));
+    const participanti = parseParticipanti(v(r, 'participanti'));
+
+    evenimente.push({
+      id: i,
+      nume,
+      luni,
+      sezon: parseSezon(v(r, 'sezon')),
+      ziInceput: p ? p.inceput.getDate() : 99,
+      sursa: v(r, 'sursa') || 'Nespecificat',
+      categorie: cat.eticheta,
+      culoare: cat.culoare,
+      participanti,
+      marime: clasaMarime(participanti),
+      campuri: {
+        'Perioadă':      v(r, 'perioada'),
+        'Localitate':    v(r, 'localitate'),
+        'Mediu':         v(r, 'mediu'),
+        'Categorie':     v(r, 'categorie'),
+        'Anvergură':     v(r, 'anvergura'),
+        'Rol turistic':  v(r, 'rol'),
+        'Tip eveniment': v(r, 'tip'),
+        'Participanți':  v(r, 'participanti'),
+        'Organizator':   v(r, 'organizator'),
+        'Sursă':         v(r, 'sursa')
+      },
+      link: linkComplet(v(r, 'link')),
+      _text: fara(`${nume} ${v(r,'localitate')} ${v(r,'organizator')} ${v(r,'categorie')}`)
+    });
+  });
+
+  const lipsa = Object.keys(TEST.coloane).filter(k => !C[k]);
+  return { evenimente, lipsa };
+}
+
+
+/* ==========================================================================
+   Filtre
+   ========================================================================== */
+
+function trece(e){
+  if (!stare.surse.has(e.sursa)) return false;
+  if (!stare.categorii.has(e.categorie)) return false;
+  if (stare.cautare && !e._text.includes(stare.cautare)) return false;
+  return true;
+}
+
+function inSezon(e, sezon){
+  if (e.luni.length) return e.luni.some(l => sezon.luni.includes(l));
+  return e.sezon === sezon.cheie;
+}
+
+function deseneazaSurse(){
+  const gazda = document.getElementById('surse');
+  gazda.innerHTML = '';
+  [...new Set(stare.toate.map(e => e.sursa))].sort(cmp).forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'buton comutator';
+    b.type = 'button';
+    b.textContent = s;
+    b.setAttribute('aria-pressed', stare.surse.has(s));
+    b.addEventListener('click', () => {
+      stare.surse.has(s) ? stare.surse.delete(s) : stare.surse.add(s);
+      if (!stare.surse.size) stare.surse.add(s);
+      deseneazaSurse();
+      deseneazaTot();
+    });
+    gazda.appendChild(b);
+  });
+}
+
+function deseneazaCategorii(){
+  const gazda = document.getElementById('filtre');
+  gazda.innerHTML = '';
+
+  const numar = new Map(), culori = new Map();
+  stare.toate.forEach(e => {
+    numar.set(e.categorie, (numar.get(e.categorie) || 0) + 1);
+    culori.set(e.categorie, e.culoare);
+  });
+
+  const bloc = document.createElement('div');
+  bloc.className = 'categorie';
+  bloc.innerHTML = '<div class="cap-categorie" style="cursor:default">' +
+                   '<span class="nume-categorie">Categorie tematică</span></div>';
+  const lista = document.createElement('div');
+  lista.className = 'subcategorii';
+
+  [...numar.keys()].sort(cmp).forEach(cat => {
+    const rand = document.createElement('label');
+    rand.className = 'subcategorie';
+    rand.innerHTML =
+      `<input type="checkbox" ${stare.categorii.has(cat) ? 'checked' : ''}>
+       <span style="color:${culori.get(cat)};font-weight:500">${esc(cat)}</span>
+       <span class="numar">${numar.get(cat)}</span>`;
+    rand.querySelector('input').addEventListener('change', ev => {
+      ev.target.checked ? stare.categorii.add(cat) : stare.categorii.delete(cat);
+      deseneazaTot();
+    });
+    lista.appendChild(rand);
+  });
+
+  bloc.appendChild(lista);
+  gazda.appendChild(bloc);
+}
+
+function deseneazaSezoane(){
+  const gazda = document.getElementById('sezoane');
+  gazda.innerHTML = '';
+  const baza = stare.toate.filter(trece);
+
+  TEST.sezoane.forEach(s => {
+    const n = baza.filter(e => inSezon(e, s)).length;
+    const luniText = s.luni.map(l => LUNI_SCURT[l - 1]).join(' · ');
+    const b = document.createElement('button');
+    b.className = 'sezon';
+    b.type = 'button';
+    b.setAttribute('aria-pressed', stare.sezon === s.cheie);
+    b.innerHTML = `<b>${s.eticheta}</b><span>${luniText} · <span class="cnt">${n}</span></span>`;
+    b.addEventListener('click', () => { stare.sezon = s.cheie; inchideFisa(); deseneazaTot(); });
+    gazda.appendChild(b);
+  });
+}
+
+
+/* ==========================================================================
+   Rândurile cu cercuri
+   ========================================================================== */
+
+function cercHtml(e){
+  const titlu = e.nume + (e.participanti !== null ? ` · ${e.campuri['Participanți']} participanți` : '');
+  return `<button class="cerc m${e.marime}${stare.ales === e.id ? ' ales' : ''}" type="button"
+            style="--c:${e.culoare}" data-id="${e.id}"
+            aria-label="${esc(titlu)}"></button>`;
+}
+
+function ordine(a, b){
+  return a.ziInceput - b.ziInceput || b.marime - a.marime || cmp(a.nume, b.nume);
+}
+
+function deseneazaRanduri(){
+  const gazda = document.getElementById('randuri');
+  const sezon = TEST.sezoane.find(s => s.cheie === stare.sezon);
+  const vizibile = stare.toate.filter(e => trece(e) && inSezon(e, sezon));
+
+  let html = '';
+  sezon.luni.forEach(l => {
+    const dinLuna = vizibile.filter(e => e.luni.includes(l)).sort(ordine);
+    html += `<section class="rand-luna">
+      <h2>${LUNI[l - 1][0].toUpperCase() + LUNI[l - 1].slice(1)}
+        <small>${dinLuna.length} ${dinLuna.length === 1 ? 'eveniment' : 'evenimente'}</small></h2>
+      <div class="cercuri">${dinLuna.length ? dinLuna.map(cercHtml).join('')
+                                            : '<span class="gol-luna">niciun eveniment</span>'}</div>
+    </section>`;
+  });
+
+  // evenimente cu sezon, dar fără lună precizată
+  const fara = vizibile.filter(e => !e.luni.length).sort(ordine);
+  if (fara.length){
+    html += `<section class="rand-luna nedatat">
+      <h2>Lună neprecizată<small>${fara.length} în acest sezon</small></h2>
+      <div class="cercuri">${fara.map(cercHtml).join('')}</div>
+    </section>`;
+  }
+
+  gazda.innerHTML = html;
+  document.getElementById('nr-evenimente').textContent = vizibile.length;
+
+  gazda.querySelectorAll('.cerc').forEach(c => {
+    const e = stare.toate.find(x => x.id === +c.dataset.id);
+    c.addEventListener('mouseenter', () => aratEticheta(c, e));
+    c.addEventListener('mouseleave', ascundeEticheta);
+    c.addEventListener('focus',      () => aratEticheta(c, e));
+    c.addEventListener('blur',       ascundeEticheta);
+    c.addEventListener('click', ev => { ev.stopPropagation(); ascundeEticheta(); deschideFisa(c, e); });
+  });
+}
+
+function deseneazaTot(){
+  deseneazaSezoane();
+  deseneazaRanduri();
+}
+
+
+/* ==========================================================================
+   Eticheta de la hover și fișa de detalii
+   ========================================================================== */
+
+const eticheta = document.getElementById('eticheta');
+
+function aratEticheta(cerc, e){
+  const r = cerc.getBoundingClientRect();
+  eticheta.textContent = e.nume;
+  eticheta.style.left = (r.left + r.width / 2) + 'px';
+  eticheta.style.top = r.top + 'px';
+  eticheta.hidden = false;
+}
+function ascundeEticheta(){ eticheta.hidden = true; }
+
+const fisa = document.getElementById('fisa');
+
+function deschideFisa(cerc, e){
+  stare.ales = e.id;
+  document.querySelectorAll('.cerc.ales').forEach(x => x.classList.remove('ales'));
+  cerc.classList.add('ales');
+
+  fisa.style.setProperty('--c', e.culoare);
+  fisa.style.setProperty('--c-fond', tenta(e.culoare, '12'));
+  document.getElementById('fisa-categorie').textContent = e.categorie;
+  document.getElementById('fisa-titlu').textContent = e.nume;
+
+  const dl = Object.entries(e.campuri)
+    .filter(([, val]) => val)
+    .map(([k, val]) => `<dt>${esc(k)}</dt><dd>${esc(val)}</dd>`);
+  if (e.link) dl.push(`<dt>Link</dt><dd><a href="${esc(e.link)}" target="_blank" rel="noopener">pagina evenimentului</a></dd>`);
+  document.getElementById('fisa-detalii').innerHTML = dl.join('');
+
+  fisa.hidden = false;
+
+  // o așezăm lângă cerc, întorcând-o dacă ar ieși din ecran
+  const r = cerc.getBoundingClientRect();
+  const lat = fisa.offsetWidth, inalt = fisa.offsetHeight;
+  let stanga = r.right + 14;
+  if (stanga + lat > window.innerWidth - 12) stanga = r.left - lat - 14;
+  if (stanga < 12) stanga = 12;
+  let sus = r.top + r.height / 2 - inalt / 2;
+  sus = Math.max(12, Math.min(sus, window.innerHeight - inalt - 12));
+  fisa.style.left = stanga + 'px';
+  fisa.style.top = sus + 'px';
+
+  fisa.querySelector('.inchide').focus({ preventScroll:true });
+}
+
+function inchideFisa(){
+  fisa.hidden = true;
+  stare.ales = null;
+  document.querySelectorAll('.cerc.ales').forEach(x => x.classList.remove('ales'));
+}
+
+fisa.querySelector('.inchide').addEventListener('click', inchideFisa);
+fisa.addEventListener('click', ev => ev.stopPropagation());
+document.addEventListener('click', () => { if (!fisa.hidden) inchideFisa(); });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') inchideFisa(); });
+document.getElementById('randuri').addEventListener('scroll', () => { ascundeEticheta(); inchideFisa(); });
+window.addEventListener('resize', () => { ascundeEticheta(); inchideFisa(); });
+
+document.getElementById('cautare').addEventListener('input', ev => {
+  stare.cautare = fara(ev.target.value);
+  inchideFisa();
+  deseneazaTot();
+});
+
+
+/* ==========================================================================
+   Pornire
+   ========================================================================== */
+
+(async function porneste(){
+  mesaj('Se încarcă datele…');
+  let rezultat;
+  try {
+    rezultat = await incarca();
+  } catch (err){
+    mesaj(eroareIncarcare(err), true);
+    return;
+  }
+
+  stare.toate = rezultat.evenimente;
+  stare.surse = new Set(stare.toate.map(e => e.sursa));
+  stare.categorii = new Set(stare.toate.map(e => e.categorie));
+
+  // pornim pe sezonul curent, dacă are evenimente, altfel pe primul care are
+  const lunaAzi = new Date().getMonth() + 1;
+  const curent = TEST.sezoane.find(s => s.luni.includes(lunaAzi));
+  const cuEvenimente = s => stare.toate.some(e => inSezon(e, s));
+  stare.sezon = (cuEvenimente(curent) ? curent : (TEST.sezoane.find(cuEvenimente) || curent)).cheie;
+
+  deseneazaSurse();
+  deseneazaCategorii();
+  deseneazaTot();
+
+  document.getElementById('moment').textContent =
+    new Date().toLocaleTimeString('ro-RO', { hour:'2-digit', minute:'2-digit' });
+
+  const fara = stare.toate.filter(e => !e.luni.length && !e.sezon).length;
+  const necunoscuti = stare.toate.filter(e => e.participanti === null).length;
+  const note = [];
+  if (rezultat.lipsa.length) note.push(`Coloane negăsite: <code>${rezultat.lipsa.join(', ')}</code>.`);
+  if (fara) note.push(`${fara} evenimente nu au nici lună, nici sezon, și nu apar în niciun sezon.`);
+  if (necunoscuti) note.push(`${necunoscuti} evenimente au participanți nelizibili și apar ca cercuri punctate.`);
+
+  if (note.length){
+    mesaj(note.join(' '), !!rezultat.lipsa.length);
+    setTimeout(() => mesaj(''), 11000);
+  } else {
+    mesaj('');
+  }
+})();
+</script>
+</body>
+</html>
