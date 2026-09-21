@@ -53,14 +53,22 @@
 .cerc{
   flex:none;border-radius:50%;padding:0;cursor:pointer;
   background:var(--c);border:1.5px solid rgba(20,28,24,.28);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
   transition:transform .12s ease, box-shadow .12s ease;
 }
+/* denumirea scrisă în cercurile mari și foarte mari */
+.cerc span{
+  color:var(--t,#fff);text-align:center;word-break:break-word;hyphens:auto;
+  display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;pointer-events:none;
+}
+.cerc.m3 span{font:500 8px/1.12 var(--sans);-webkit-line-clamp:3;padding:0 6px}
+.cerc.m4 span{font:500 9.5px/1.15 var(--sans);-webkit-line-clamp:4;padding:0 9px}
 .cerc:hover,.cerc:focus-visible{transform:scale(1.14);box-shadow:0 3px 10px rgba(20,28,24,.25);z-index:2}
 .cerc.ales{outline:2px solid var(--cerneala);outline-offset:2px}
 .cerc.m1{width:16px;height:16px}
 .cerc.m2{width:26px;height:26px}
-.cerc.m3{width:40px;height:40px}
-.cerc.m4{width:58px;height:58px}
+.cerc.m3{width:48px;height:48px}
+.cerc.m4{width:72px;height:72px}
 .cerc.m0{width:16px;height:16px;background:transparent;border:2px dashed var(--c)}
 
 /* legenda mărimilor */
@@ -70,7 +78,15 @@
 .legenda-rand i{
   flex:none;display:block;border-radius:50%;background:#C9CEC6;border:1.5px solid rgba(20,28,24,.28);
 }
-.legenda-rand .slot{width:58px;display:flex;justify-content:center;flex:none}
+.legenda-rand .slot{width:72px;display:flex;justify-content:center;flex:none}
+
+/* butonul de selectare totală, lângă titlul filtrului */
+.cap-filtru{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:3px 0}
+.toate-niciuna{
+  border:0;background:none;padding:0;cursor:pointer;
+  font:400 12px var(--sans);color:var(--focus);white-space:nowrap;
+}
+.toate-niciuna:hover{text-decoration:underline}
 
 /* eticheta de la hover */
 #eticheta{
@@ -138,8 +154,8 @@
       <h3>Participanți (orientativ)</h3>
       <div class="legenda-rand"><span class="slot"><i style="width:16px;height:16px"></i></span>sub 100</div>
       <div class="legenda-rand"><span class="slot"><i style="width:26px;height:26px"></i></span>100 – 1.000</div>
-      <div class="legenda-rand"><span class="slot"><i style="width:40px;height:40px"></i></span>1.000 – 5.000</div>
-      <div class="legenda-rand"><span class="slot"><i style="width:58px;height:58px"></i></span>peste 5.000</div>
+      <div class="legenda-rand"><span class="slot"><i style="width:48px;height:48px"></i></span>1.000 – 5.000</div>
+      <div class="legenda-rand"><span class="slot"><i style="width:72px;height:72px"></i></span>peste 5.000</div>
       <div class="legenda-rand"><span class="slot"><i style="width:16px;height:16px;background:none;border:2px dashed #9AA39D"></i></span>necunoscut</div>
     </div>
 
@@ -198,6 +214,11 @@ const TEST = {
 
   // Pragurile de mărime pentru cercuri
   praguri: [100, 1000, 5000],
+
+  // Culori pentru categoriile care nu apar în FESTIVALURI.categorii.
+  // Se împart în ordine, câte una pe categorie, deci nu se pot repeta.
+  culoriSuplimentare: ['#0F8C8C','#A0522D','#4C5FAF','#B03A7E','#6E8C2C',
+                       '#8A6BBF','#C2571A','#2E7D6B','#7A6A2E','#5C6B8A'],
 
   sezoane: [
     { cheie:'iarna',     eticheta:'Iarnă',     luni:[12,1,2] },
@@ -304,6 +325,20 @@ function parseSezon(text){
   return null;
 }
 
+// „2. Religie și pelerinaj”, „6) Sport…”, „8 - Sărbători…” pierd numărul din față
+function faraNumerotare(text){
+  return (text || '').toString().replace(/^\s*\d+\s*[.)\-–:]\s*/, '').trim();
+}
+
+// Text alb pe culori închise, text închis pe culori deschise (galben, ocru)
+function culoareText(hex){
+  if (!/^#[0-9a-f]{6}$/i.test(hex)) return '#fff';
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
+    .map(c => c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4));
+  const lum = .2126 * r + .7152 * g + .0722 * b;
+  return lum > .32 ? '#1B2320' : '#fff';
+}
+
 function inactiv(text){
   return ['nu','0','inactiv','false','anulat'].includes(fara(text));
 }
@@ -352,7 +387,8 @@ async function incarca(){
     if (!nume) return;
     if (inactiv(v(r, 'activ'))) return;
 
-    const cat = potrivesteCategorie(v(r, 'categorie'));
+    const catText = faraNumerotare(v(r, 'categorie'));
+    const cat = potrivesteCategorie(catText);
     let luni = parseLuni(v(r, 'luna'));
     if (!luni.length){
       const p = parsePerioada(v(r, 'perioada'));
@@ -376,7 +412,7 @@ async function incarca(){
         'Perioadă':      v(r, 'perioada'),
         'Localitate':    v(r, 'localitate'),
         'Mediu':         v(r, 'mediu'),
-        'Categorie':     v(r, 'categorie'),
+        'Categorie':     catText,
         'Anvergură':     v(r, 'anvergura'),
         'Rol turistic':  v(r, 'rol'),
         'Tip eveniment': v(r, 'tip'),
@@ -388,6 +424,15 @@ async function incarca(){
       _text: fara(`${nume} ${v(r,'localitate')} ${v(r,'organizator')} ${v(r,'categorie')}`)
     });
   });
+
+  // categoriile care nu au culoare fixă primesc câte una distinctă, în ordine alfabetică
+  const cunoscute = new Set(FESTIVALURI.categorii.map(c => c.eticheta));
+  const ocupate = new Set(FESTIVALURI.categorii.map(c => c.culoare.toLowerCase()));
+  const libere = TEST.culoriSuplimentare.filter(c => !ocupate.has(c.toLowerCase()));
+  const noi = [...new Set(evenimente.filter(e => !cunoscute.has(e.categorie))
+                                    .map(e => e.categorie))].sort(cmp);
+  const atribuite = new Map(noi.map((c, i) => [c, libere[i % libere.length]]));
+  evenimente.forEach(e => { if (atribuite.has(e.categorie)) e.culoare = atribuite.get(e.categorie); });
 
   const lipsa = Object.keys(TEST.coloane).filter(k => !C[k]);
   return { evenimente, lipsa, antete, randAntet: iAntet + 1 };
@@ -439,10 +484,23 @@ function deseneazaCategorii(){
     culori.set(e.categorie, e.culoare);
   });
 
+  const toate = [...numar.keys()];
+  const toateBifate = toate.every(c => stare.categorii.has(c));
+
   const bloc = document.createElement('div');
   bloc.className = 'categorie';
-  bloc.innerHTML = '<div class="cap-categorie" style="cursor:default">' +
-                   '<span class="nume-categorie">Categorie tematică</span></div>';
+  bloc.innerHTML =
+    `<div class="cap-filtru">
+       <span class="nume-categorie">Categorie tematică</span>
+       <button class="toate-niciuna" type="button">${toateBifate ? 'Deselectează tot' : 'Selectează tot'}</button>
+     </div>`;
+  bloc.querySelector('.toate-niciuna').addEventListener('click', () => {
+    stare.categorii = toateBifate ? new Set() : new Set(toate);
+    inchideFisa();
+    deseneazaCategorii();
+    deseneazaTot();
+  });
+
   const lista = document.createElement('div');
   lista.className = 'subcategorii';
 
@@ -455,6 +513,8 @@ function deseneazaCategorii(){
        <span class="numar">${numar.get(cat)}</span>`;
     rand.querySelector('input').addEventListener('change', ev => {
       ev.target.checked ? stare.categorii.add(cat) : stare.categorii.delete(cat);
+      const buton = bloc.querySelector('.toate-niciuna');
+      buton.textContent = toate.every(c => stare.categorii.has(c)) ? 'Deselectează tot' : 'Selectează tot';
       deseneazaTot();
     });
     lista.appendChild(rand);
@@ -489,9 +549,10 @@ function deseneazaSezoane(){
 
 function cercHtml(e){
   const titlu = e.nume + (e.participanti !== null ? ` · ${e.campuri['Participanți']} participanți` : '');
+  const text = e.marime >= 3 ? `<span aria-hidden="true">${esc(e.nume)}</span>` : '';
   return `<button class="cerc m${e.marime}${stare.ales === e.id ? ' ales' : ''}" type="button"
-            style="--c:${e.culoare}" data-id="${e.id}"
-            aria-label="${esc(titlu)}"></button>`;
+            style="--c:${e.culoare};--t:${culoareText(e.culoare)}" data-id="${e.id}"
+            aria-label="${esc(titlu)}">${text}</button>`;
 }
 
 function ordine(a, b){
