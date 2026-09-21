@@ -177,8 +177,7 @@
 const TEST = {
   url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR2m0ob7kRyIJ5fmf5hqKHYnie_Yd9Pn1NE9gGKitelBxfQQVxA74ndZ31_q0ulpVn16dbsxdZtWr7N/pub?gid=262696074&single=true&output=csv',
 
-  // Coloanele se recunosc după cuvinte-cheie, nu după textul exact,
-  // deci „A. Categorie tematică” și „Categorie tematica” merg la fel.
+  // Numele exacte ale coloanelor din tabel
   coloane: {
     sursa:        ['Sursă'],
     nume:         ['Nume eveniment'],
@@ -191,7 +190,7 @@ const TEST = {
     anvergura:    ['B. Anvergură'],
     rol:          ['C. Rol turistic'],
     tip:          ['D. Tip eveniment'],
-    participanti: ['Participanti (orientativ)'],
+    participanti: ['Participanți (orientativ)'],
     organizator:  ['Organizator'],
     link:         ['Link'],
     activ:        ['Activ']
@@ -221,7 +220,8 @@ function mesaj(text, esteEroare){
   cutie.innerHTML = text;
 }
 
-// Leagă fiecare câmp de antetul real din tabel
+// Leagă fiecare câmp de antetul real din tabel. Normalizăm ambele părți,
+// deci cheile se pot scrie oricum: cu diacritice, majuscule sau fără.
 function hartaColoane(antete){
   const rezultat = {};
   const folosite = new Set();
@@ -229,7 +229,9 @@ function hartaColoane(antete){
 
   for (const [camp, chei] of Object.entries(TEST.coloane)){
     let gasit = null;
-    for (const cheie of chei){
+    for (const cheieBruta of chei){
+      const cheie = fara(cheieBruta);
+      if (!cheie) continue;
       gasit = norm.find(a => !folosite.has(a.brut) && a.n === cheie)
            || norm.find(a => !folosite.has(a.brut) && a.n.includes(cheie));
       if (gasit) break;
@@ -237,6 +239,18 @@ function hartaColoane(antete){
     if (gasit){ rezultat[camp] = gasit.brut; folosite.add(gasit.brut); }
   }
   return rezultat;
+}
+
+// Găsește rândul de antet printre primele rânduri: cel în care se
+// recunosc cele mai multe coloane. Ocolește titluri sau rânduri goale de sus.
+function gasesteAntet(randuri){
+  let celMaiBun = 0, scor = -1;
+  const limita = Math.min(randuri.length, 15);
+  for (let i = 0; i < limita; i++){
+    const potriviri = Object.keys(hartaColoane(randuri[i].map(c => (c || '').toString().trim()))).length;
+    if (potriviri > scor){ scor = potriviri; celMaiBun = i; }
+  }
+  return celMaiBun;
 }
 
 // „1.000”, „~500”, „1000-5000”, „peste 5.000”, „1,5 mii”, „2k”
@@ -316,10 +330,20 @@ const stare = {
 async function incarca(){
   const raspuns = await fetch(faraCache(TEST.url));
   if (!raspuns.ok) throw new Error('HTTP ' + raspuns.status);
-  const text = await raspuns.text();
+  const text = (await raspuns.text()).replace(/^\uFEFF/, '');
 
-  const parsat = Papa.parse(text.trim(), { header:true, skipEmptyLines:true });
-  const C = hartaColoane(parsat.meta.fields || []);
+  // citim fără antet, apoi alegem noi rândul care arată ca un antet
+  const brut = Papa.parse(text.trim(), { header:false, skipEmptyLines:true }).data;
+  const iAntet = gasesteAntet(brut);
+  const antete = (brut[iAntet] || []).map(c => (c || '').toString().trim());
+  const C = hartaColoane(antete);
+
+  const date = brut.slice(iAntet + 1).map(rand => {
+    const o = {};
+    antete.forEach((a, j) => { if (a) o[a] = rand[j]; });
+    return o;
+  });
+  const parsat = { data: date };
   const v = (r, camp) => (C[camp] ? (r[C[camp]] || '').toString().trim() : '');
 
   const evenimente = [];
@@ -366,7 +390,7 @@ async function incarca(){
   });
 
   const lipsa = Object.keys(TEST.coloane).filter(k => !C[k]);
-  return { evenimente, lipsa };
+  return { evenimente, lipsa, antete, randAntet: iAntet + 1 };
 }
 
 
@@ -621,13 +645,18 @@ document.getElementById('cautare').addEventListener('input', ev => {
   const fara = stare.toate.filter(e => !e.luni.length && !e.sezon).length;
   const necunoscuti = stare.toate.filter(e => e.participanti === null).length;
   const note = [];
-  if (rezultat.lipsa.length) note.push(`Coloane negăsite: <code>${rezultat.lipsa.join(', ')}</code>.`);
+  if (rezultat.lipsa.length){
+    const vazute = rezultat.antete.filter(Boolean).slice(0, 8).map(esc).join(' | ');
+    note.push(`Coloane negăsite: <code>${rezultat.lipsa.join(', ')}</code>. ` +
+              `Antetul citit (rândul ${rezultat.randAntet}): <code>${vazute || 'gol'}</code>`);
+    console.log('Antet citit:', rezultat.antete);
+  }
   if (fara) note.push(`${fara} evenimente nu au nici lună, nici sezon, și nu apar în niciun sezon.`);
   if (necunoscuti) note.push(`${necunoscuti} evenimente au participanți nelizibili și apar ca cercuri punctate.`);
 
   if (note.length){
     mesaj(note.join(' '), !!rezultat.lipsa.length);
-    setTimeout(() => mesaj(''), 11000);
+    if (!rezultat.lipsa.length) setTimeout(() => mesaj(''), 11000);
   } else {
     mesaj('');
   }
