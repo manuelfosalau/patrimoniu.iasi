@@ -71,21 +71,24 @@
 .cerc.m4{width:72px;height:72px}
 .cerc.m0{width:16px;height:16px;background:transparent;border:2px dashed var(--c)}
 
-/* rândurile în stânga, legenda fixă în dreapta */
-#corp-calendar{flex:1;display:flex;min-height:0}
-#corp-calendar #randuri{flex:1}
-
-/* legenda mărimilor */
+/* legenda plutește în colțul din dreapta jos, peste zona evenimentelor */
+#continut{position:relative}
 .legenda{
-  flex:none;width:200px;padding:22px 22px 24px;overflow-y:auto;
-  background:var(--panou);border-left:1px solid var(--linie);
+  position:absolute;right:18px;bottom:18px;z-index:5;
+  background:var(--panou);border:1px solid var(--linie-tare);
+  box-shadow:0 3px 14px rgba(20,28,24,.12);padding:11px 16px 12px;
 }
-.legenda h3{font-size:15px;margin-bottom:12px;line-height:1.3}
-.legenda-rand{display:flex;align-items:center;gap:12px;margin:6px 0;font-size:12.5px;color:var(--cerneala-2)}
+.legenda h3{font-size:13.5px;margin-bottom:9px;line-height:1.2}
+.legenda-cercuri{display:flex;align-items:flex-end;gap:16px}
+.legenda-rand{display:flex;flex-direction:column;align-items:center;gap:6px;
+              font-size:11px;color:var(--cerneala-2);white-space:nowrap}
 .legenda-rand i{
-  flex:none;display:block;border-radius:50%;background:#C9CEC6;border:1.5px solid rgba(20,28,24,.28);
+  display:block;border-radius:50%;background:#C9CEC6;border:1.5px solid rgba(20,28,24,.28);
 }
-.legenda-rand .slot{width:72px;display:flex;justify-content:center;flex:none}
+.legenda-rand i.necunoscut{background:none;border:2px dashed #9AA39D}
+
+/* loc liber sub ultimul rând, ca să poată fi derulat de sub legendă */
+#randuri{padding-bottom:150px!important}
 
 /* butonul de selectare totală, lângă titlul filtrului */
 .cap-filtru{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:3px 0}
@@ -125,16 +128,13 @@
 #fisa .inchide:hover{color:var(--cerneala)}
 
 @media (max-width:860px){
-  /* pe ecran îngust legenda urcă deasupra rândurilor, pe orizontală */
-  #corp-calendar{flex-direction:column}
-  .legenda{
-    order:-1;width:auto;border-left:0;border-bottom:1px solid var(--linie);
-    display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;padding:12px 16px;
-  }
-  .legenda h3{width:100%;margin-bottom:2px;font-size:13.5px}
-  .legenda-rand{margin:0;gap:7px;font-size:12px}
-  .legenda-rand .slot{width:auto}
-  .legenda-rand .slot i{transform:scale(.6);margin:-8px}
+  /* pe ecran îngust caseta rămâne în colț, dar micșorată */
+  .legenda{right:10px;bottom:10px;padding:8px 11px 9px}
+  .legenda h3{font-size:12px;margin-bottom:6px}
+  .legenda-cercuri{gap:10px}
+  .legenda-rand{font-size:10px;gap:4px}
+  .legenda-rand i{transform:scale(.62);margin:-7px}
+  #randuri{padding-bottom:120px!important}
   #sezoane{grid-template-columns:repeat(2,1fr)}
   .sezon:nth-child(2){border-right:0}
   .rand-luna{grid-template-columns:1fr;gap:10px}
@@ -175,17 +175,18 @@
 
   <main id="continut">
     <div id="sezoane" role="group" aria-label="Alege sezonul"></div>
-    <div id="corp-calendar">
-      <div id="randuri"></div>
-      <aside class="legenda" aria-label="Legenda mărimilor">
-        <h3>Participanți (orientativ)</h3>
-        <div class="legenda-rand"><span class="slot"><i style="width:16px;height:16px"></i></span>sub 100</div>
-        <div class="legenda-rand"><span class="slot"><i style="width:26px;height:26px"></i></span>100 – 1.000</div>
-        <div class="legenda-rand"><span class="slot"><i style="width:48px;height:48px"></i></span>1.000 – 5.000</div>
-        <div class="legenda-rand"><span class="slot"><i style="width:72px;height:72px"></i></span>peste 5.000</div>
-        <div class="legenda-rand"><span class="slot"><i style="width:16px;height:16px;background:none;border:2px dashed #9AA39D"></i></span>necunoscut</div>
-      </aside>
-    </div>
+    <div id="randuri"></div>
+
+    <aside class="legenda" aria-label="Legenda mărimilor">
+      <h3>Participanți (orientativ)</h3>
+      <div class="legenda-cercuri">
+        <div class="legenda-rand"><i style="width:16px;height:16px"></i><span>sub 100</span></div>
+        <div class="legenda-rand"><i style="width:26px;height:26px"></i><span>100 – 1.000</span></div>
+        <div class="legenda-rand"><i style="width:48px;height:48px"></i><span>1.000 – 5.000</span></div>
+        <div class="legenda-rand"><i style="width:72px;height:72px"></i><span>peste 5.000</span></div>
+        <div class="legenda-rand"><i class="necunoscut" style="width:16px;height:16px"></i><span>necunoscut</span></div>
+      </div>
+    </aside>
   </main>
 </div>
 
