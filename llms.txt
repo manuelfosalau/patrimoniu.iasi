@@ -16,7 +16,8 @@ confirmă accesibilitatea publică sau programul de vizitare.
 ## Pagini
 
 - [Harta patrimoniului](https://manuelfosalau.github.io/patrimoniu.iasi/): harta interactivă, cu filtrare pe categorii și subcategorii
-- [Calendarul evenimentelor](https://manuelfosalau.github.io/patrimoniu.iasi/evenimente.html): festivalurile și manifestările din județ, ordonate pe luni
+- [Calendarul evenimentelor](https://manuelfosalau.github.io/patrimoniu.iasi/evenimente.html): evenimentele pe sezoane și luni, dimensionate după numărul de participanți, cu filtre pe categorie tematică și rol turistic
+- [Calendarul festivalurilor](https://manuelfosalau.github.io/patrimoniu.iasi/calendar-2.html): lista festivalurilor, ordonată pe luni
 - [Despre proiect](https://manuelfosalau.github.io/patrimoniu.iasi/despre.html): surse de date, condiții de utilizare, confidențialitate și contact
 
 ## Surse

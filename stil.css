@@ -53,7 +53,7 @@ h1,h2,h3{font-family:var(--serif);font-weight:600;margin:0;letter-spacing:-.005e
 #antet h1{font-size:23px;line-height:1.18}
 #antet p{margin:7px 0 0;font-size:12.5px;color:var(--cerneala-3);line-height:1.4}
 
-nav.navigare{display:flex;gap:22px;padding:0 24px;border-bottom:1px solid var(--linie)}
+nav.navigare{display:flex;flex-wrap:wrap;gap:0 18px;padding:0 24px;border-bottom:1px solid var(--linie)}
 nav.navigare a{
   padding:9px 0 11px;text-decoration:none;font-size:13.5px;color:var(--cerneala-3);
   border-bottom:2px solid transparent;margin-bottom:-1px;
