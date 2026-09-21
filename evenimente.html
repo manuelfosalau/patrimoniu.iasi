@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Spectral:ital,wght@0,500;0,600;1,500&display=swap">
-<link rel="stylesheet" href="stil.css?v=8">
+<link rel="stylesheet" href="stil.css?v=9">
 
 <style>
 /* Stilurile specifice acestui calendar. Stau aici ca să nu intre în
@@ -88,7 +88,17 @@
   background:var(--panou);border:1px solid var(--linie-tare);
   box-shadow:0 3px 14px rgba(20,28,24,.12);padding:11px 16px 12px;
 }
-.legenda h3{font-size:13.5px;margin-bottom:9px;line-height:1.2}
+.legenda summary{
+  font:600 13.5px/1.2 var(--serif);margin-bottom:9px;cursor:pointer;
+  list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.legenda summary::-webkit-details-marker{display:none}
+.legenda summary::after{
+  content:"";width:7px;height:7px;border-right:1.5px solid var(--cerneala-3);
+  border-bottom:1.5px solid var(--cerneala-3);transform:rotate(-135deg);margin-top:3px;
+}
+.legenda:not([open]) summary{margin-bottom:0}
+.legenda:not([open]) summary::after{transform:rotate(45deg);margin-top:-3px}
 .legenda-cercuri{display:flex;align-items:flex-end;gap:16px}
 .legenda-rand{display:flex;flex-direction:column;align-items:center;gap:6px;
               font-size:11px;color:var(--cerneala-2);white-space:nowrap}
@@ -138,18 +148,37 @@
 #fisa .inchide:hover{color:var(--cerneala)}
 
 @media (max-width:860px){
-  /* pe ecran îngust caseta rămâne în colț, dar micșorată */
-  .legenda{right:10px;bottom:10px;padding:8px 11px 9px}
-  .legenda h3{font-size:12px;margin-bottom:6px}
+  /* cele patru sezoane pe un singur rând, doar cu numele și numărul */
+  #sezoane{grid-template-columns:repeat(4,1fr)}
+  .sezon{padding:9px 4px 8px;text-align:center;border-bottom-width:2px}
+  .sezon b{font-size:14.5px}
+  /* numărul stă pe buton, deci îl citim de acolo, nu de pe titlu */
+  .sezon::after{
+    content:attr(data-n);display:block;
+    font:400 11px var(--sans);color:var(--cerneala-3);margin-top:2px;
+  }
+  .sezon > span{display:none}
+
+  /* luna deasupra cercurilor, cu numărul pe același rând */
+  #randuri{padding:0 14px 90px!important}
+  .rand-luna{grid-template-columns:1fr;gap:9px;padding:13px 0;min-height:0}
+  .rand-luna h2{font-size:18px;display:flex;align-items:baseline;gap:9px}
+  .rand-luna h2 small{margin:0}
+  .cercuri{gap:7px 8px}
+
+  /* legenda strânsă implicit, se deschide cu o atingere */
+  .legenda{right:10px;bottom:calc(10px + env(safe-area-inset-bottom));padding:8px 11px}
+  .legenda summary{font-size:12.5px}
+  .legenda[open] summary{margin-bottom:7px}
   .legenda-cercuri{gap:10px}
   .legenda-rand{font-size:10px;gap:4px}
   .legenda-rand i{transform:scale(.62);margin:-7px}
-  #randuri{padding-bottom:120px!important}
-  #sezoane{grid-template-columns:repeat(2,1fr)}
-  .sezon:nth-child(2){border-right:0}
-  .rand-luna{grid-template-columns:1fr;gap:10px}
-  #randuri{padding:4px 16px 30px}
-  #fisa{left:12px!important;right:12px;bottom:12px;top:auto!important;width:auto}
+
+  /* fișa de detalii urcă de jos, pe toată lățimea */
+  #fisa{left:10px!important;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));
+        top:auto!important;width:auto;max-height:70vh;display:flex;flex-direction:column}
+  #fisa[hidden]{display:none}
+  #fisa .corp{max-height:none;flex:1;min-height:0}
 }
 </style>
 </head>
@@ -162,6 +191,9 @@
     <header id="antet">
       <h1>Calendarul evenimentelor</h1>
       <p>Municipiul și județul Iași, pe sezoane</p>
+      <button id="buton-filtre" type="button" aria-controls="bara" aria-expanded="false">
+        <span class="text">Filtre</span>
+      </button>
     </header>
 
     <nav class="navigare" aria-label="Secțiuni">
@@ -182,14 +214,15 @@
       <span><strong id="nr-evenimente">0</strong> evenimente în sezon</span>
       <span id="moment"></span>
     </div>
+    <button id="inchide-filtre" type="button">Vezi rezultatele</button>
   </aside>
 
   <main id="continut">
     <div id="sezoane" role="group" aria-label="Alege sezonul"></div>
     <div id="randuri"></div>
 
-    <aside class="legenda" aria-label="Legenda mărimilor">
-      <h3>Participanți (orientativ)</h3>
+    <details class="legenda" open>
+      <summary>Participanți (orientativ)</summary>
       <div class="legenda-cercuri">
         <div class="legenda-rand"><i style="width:16px;height:16px"></i><span>sub 100</span></div>
         <div class="legenda-rand"><i style="width:26px;height:26px"></i><span>100 – 1.000</span></div>
@@ -197,7 +230,7 @@
         <div class="legenda-rand"><i style="width:72px;height:72px"></i><span>peste 5.000</span></div>
         <div class="legenda-rand"><i class="necunoscut" style="width:16px;height:16px"></i><span>necunoscut</span></div>
       </div>
-    </aside>
+    </details>
   </main>
 </div>
 
@@ -212,7 +245,8 @@
 <div id="stare" role="status">Se încarcă datele…</div>
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<script src="config.js?v=8"></script>
+<script src="config.js?v=9"></script>
+<script src="mobil.js?v=9" defer></script>
 <script>
 
 /* ==========================================================================
@@ -594,6 +628,7 @@ function deseneazaSezoane(){
     b.className = 'sezon';
     b.type = 'button';
     b.setAttribute('aria-pressed', stare.sezon === s.cheie);
+    b.dataset.n = n;
     b.innerHTML = `<b>${s.eticheta}</b><span>${luniText} · <span class="cnt">${n}</span></span>`;
     b.addEventListener('click', () => { stare.sezon = s.cheie; inchideFisa(); deseneazaTot(); });
     gazda.appendChild(b);
@@ -733,6 +768,11 @@ document.getElementById('cautare').addEventListener('input', ev => {
 /* ==========================================================================
    Pornire
    ========================================================================== */
+
+if (window.matchMedia('(max-width:860px)').matches){
+  const leg = document.querySelector('details.legenda');
+  if (leg) leg.open = false;
+}
 
 (async function porneste(){
   mesaj('Se încarcă datele…');

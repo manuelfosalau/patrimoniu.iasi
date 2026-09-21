@@ -94,6 +94,9 @@ select:hover,.buton:hover{border-color:var(--cerneala-3);color:var(--cerneala)}
 .subcategorie span:first-of-type{flex:1}
 input[type=checkbox]{accent-color:var(--cerneala);width:13px;height:13px;cursor:pointer;flex:none;margin:0}
 
+/* butoanele panoului de filtre, folosite doar pe telefon */
+#buton-filtre,#inchide-filtre{display:none}
+
 #subsol{
   padding:13px 24px;border-top:1px solid var(--linie);font-size:11.5px;
   color:var(--cerneala-3);display:flex;justify-content:space-between;gap:12px;
@@ -295,16 +298,74 @@ input[type=checkbox]{accent-color:var(--cerneala);width:13px;height:13px;cursor:
 .pagina footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--linie);font-size:13px;color:var(--cerneala-3)}
 
 @media (max-width:860px){
-  #aplicatie{grid-template-columns:1fr;grid-template-rows:1fr auto}
-  #harta,#continut{order:1;min-height:44vh}
-  #bara{order:2;max-height:52vh;border-right:0;border-top:1px solid var(--linie-tare)}
-  #antet{padding:15px 18px 11px}
-  #antet h1{font-size:19px}
-  nav.navigare,#unelte,#filtre,#subsol{padding-left:18px;padding-right:18px}
+  /* Pe telefon conținutul ocupă tot ecranul. Bara laterală devine o bandă
+     subțire sus, cu titlu, meniu și un buton care deschide filtrele peste tot. */
+  #aplicatie{display:flex;flex-direction:column;height:100%;height:100dvh}
+  #harta,#continut{flex:1;min-height:0;order:1}
+
+  #bara{
+    order:0;flex:none;max-height:none;min-height:0;
+    border-right:0;border-bottom:1px solid var(--linie-tare);
+  }
+  #antet{display:flex;align-items:center;gap:12px;padding:10px 14px 4px}
+  #antet h1{font-size:16.5px;flex:1;line-height:1.2}
+  #antet p{display:none}
+
+  nav.navigare{
+    padding:0 14px;gap:0 16px;flex-wrap:nowrap;overflow-x:auto;
+    scrollbar-width:none;border-bottom:0;
+  }
+  nav.navigare::-webkit-scrollbar{display:none}
+  nav.navigare a{padding:6px 0 8px;font-size:13px;white-space:nowrap}
+
+  #unelte,#filtre,#subsol,.legenda-panou{display:none}
+
+  #buton-filtre{
+    display:inline-flex;align-items:center;gap:7px;flex:none;
+    padding:7px 12px;border:1px solid var(--linie-tare);background:var(--panou);
+    font:500 13px var(--sans);color:var(--cerneala);cursor:pointer;
+  }
+  #buton-filtre .contor{
+    min-width:18px;height:18px;padding:0 5px;border-radius:9px;
+    background:var(--cerneala);color:#fff;font-size:11px;line-height:18px;text-align:center;
+  }
+
+  /* panoul deschis acoperă ecranul și se derulează în întregime */
+  #bara.deschis{
+    position:fixed;inset:0;z-index:2000;overflow-y:auto;
+    border-bottom:0;padding-bottom:84px;-webkit-overflow-scrolling:touch;
+  }
+  #bara.deschis #unelte{display:grid}
+  #bara.deschis #filtre{display:block;flex:none;overflow:visible}
+  #bara.deschis #subsol{display:flex}
+  #bara.deschis #buton-filtre{background:var(--cerneala);color:#fff;border-color:var(--cerneala)}
+  #bara.deschis #inchide-filtre{
+    display:block;position:fixed;left:14px;right:14px;
+    bottom:calc(14px + env(safe-area-inset-bottom));z-index:2001;
+    padding:14px;border:0;background:var(--cerneala);color:#fff;
+    font:500 15px var(--sans);cursor:pointer;box-shadow:0 4px 16px rgba(20,28,24,.25);
+  }
+  body.panou-deschis{overflow:hidden}
+
+  #unelte,#filtre,#subsol{padding-left:16px;padding-right:16px}
+  /* sub 16px, Safari mărește pagina la atingerea câmpului de căutare */
+  #cautare{font-size:16px}
+
   .leaflet-popup-content{width:252px!important}
-  #luni{padding:12px 16px}
-  #lista-festivaluri{padding:6px 16px 30px}
+  #inapoi-judet{left:10px;top:10px}
+
+  /* calendarul 2: benzile de luni se derulează pe orizontală, nu pe trei rânduri */
+  #luni{flex-wrap:nowrap;overflow-x:auto;padding:10px 12px;scrollbar-width:none}
+  #luni::-webkit-scrollbar{display:none}
+  .luna{flex:none;padding:7px 12px;font-size:15px}
+  #lista-festivaluri{padding:6px 14px 30px}
+  .festival-cap{padding:12px 12px}
+  .festival-cap .titlu{font-size:15.5px}
+  .festival-detalii{padding:0 12px 14px}
+  .grup-luna > h2{font-size:18px}
+
   .pagina{padding:38px 20px 64px}
+}
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}
